@@ -9,7 +9,6 @@ import javax.ws.rs.core.Application;
 import com.fnt.rest.CustomerOrderResource;
 import com.fnt.rest.CustomerResource;
 import com.fnt.rest.ItemResource;
-import com.fnt.rest.NumberSerieResource;
 import com.fnt.rest.QueueResource;
 
 @ApplicationPath("rest")
@@ -29,7 +28,6 @@ public class JAXRSConfiguration extends Application {
 		set.add(ItemResource.class);
 		set.add(CustomerResource.class);
 		set.add(CustomerOrderResource.class);
-		set.add(NumberSerieResource.class);
 	}
 
 	@Override

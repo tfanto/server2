@@ -6,18 +6,15 @@ import java.util.UUID;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 import com.fnt.dao.CustomerDao;
 import com.fnt.dao.CustomerOrderDao;
 import com.fnt.dao.ItemDao;
-import com.fnt.dao.NumberSerieDao;
 import com.fnt.dto.CustomerOrder;
 import com.fnt.entity.CustomerOrderHead;
 import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
 import com.fnt.entity.Item;
-import com.fnt.entity.NumberSerie;
 import com.fnt.message.AppJMSMessageProducer;
 
 @Stateless
@@ -28,9 +25,6 @@ public class CustomerOrderService {
 
 	@Inject
 	private ItemDao itemDao;
-
-	@Inject
-	private NumberSerieDao numberSerieDao;
 
 	@Inject
 	private AppJMSMessageProducer queueProducer;
