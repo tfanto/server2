@@ -24,9 +24,6 @@ public class ItemService {
 		if (item == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity is null. Nothing to persist");
 		}
-		if (dao.exists(item.getId())) {
-			throw new AppException(HTTP_PRECONDITION_FAILED, "Record already exist");
-		}
 		return dao.create(item);
 	}
 
@@ -38,18 +35,12 @@ public class ItemService {
 		if (item.getId() == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
-		if (!dao.exists(item.getId())) {
-			throw new AppException(HTTP_NOT_FOUND, "Record does not exist");
-		}
 		return dao.update(item);
 
 	}
 
 	public void delete(Long id) {
 
-		if (!dao.exists(id)) {
-			return;
-		}
 		Item service = get(id);
 		dao.delete(service);
 	}

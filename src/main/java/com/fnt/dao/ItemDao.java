@@ -35,10 +35,6 @@ public class ItemDao {
 		return ret;
 	}
 
-	public Boolean exists(Long id) {
-		Item ret = em.find(Item.class, id);
-		return ret != null;
-	}
 
 	public List<Item> getAll() {
 		TypedQuery<Item> query = em.createNamedQuery(Item.ITEM_GET_ALL, Item.class);

@@ -34,11 +34,6 @@ public class CustomerDao {
 		return ret;
 	}
 
-	public Boolean exists(Long id) {
-		Customer ret = em.find(Customer.class, id);
-		return ret != null;
-	}
-
 	public List<Customer> getAll() {
 		TypedQuery<Customer> query = em.createNamedQuery(Customer.CUSTOMER_GET_ALL, Customer.class);
 		return query.getResultList();

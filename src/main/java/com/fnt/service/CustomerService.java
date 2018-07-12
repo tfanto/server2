@@ -22,9 +22,6 @@ public class CustomerService {
 		if (customer == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity is null. Nothing to persist");
 		}
-		if (dao.exists(customer.getId())) {
-			throw new AppException(HTTP_PRECONDITION_FAILED, "Record already exist");
-		}
 		return dao.create(customer);
 	}
 
@@ -36,18 +33,12 @@ public class CustomerService {
 		if (customer.getId() == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
-		if (!dao.exists(customer.getId())) {
-			throw new AppException(HTTP_NOT_FOUND, "Record does not exist");
-		}
 		return dao.update(customer);
 
 	}
 
 	public void delete(Long id) {
 
-		if (!dao.exists(id)) {
-			return;
-		}
 		Customer service = get(id);
 		dao.delete(service);
 	}

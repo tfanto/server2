@@ -44,9 +44,6 @@ public class CustomerOrderService {
 		if (head.getCustomerId() == null) {
 			throw new IllegalArgumentException("Customer Order Header Primary Key Customer Id is null");
 		}
-		if (!customerDao.exists(head.getCustomerId())) {
-			throw new IllegalArgumentException("Customer does not exist " + customerOrder.getHead().getCustomerId());
-		}
 		if (head.getDate() == null) {
 			head.setDate(LocalDateTime.now());
 		}
