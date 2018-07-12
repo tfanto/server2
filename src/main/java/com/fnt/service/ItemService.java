@@ -57,7 +57,7 @@ public class ItemService {
 		return dao.getAll();
 	}
 
-	public List<String> getAllItemIds() {
+	public List<Long> getAllItemIds() {
 		return dao.getAllItemIds();
 	}
 

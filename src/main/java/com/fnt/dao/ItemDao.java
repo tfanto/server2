@@ -35,16 +35,15 @@ public class ItemDao {
 		return ret;
 	}
 
-
 	public List<Item> getAll() {
 		TypedQuery<Item> query = em.createNamedQuery(Item.ITEM_GET_ALL, Item.class);
 		return query.getResultList();
 	}
 
-	public List<String> getAllItemIds() {
+	public List<Long> getAllItemIds() {
 		Query query = em.createQuery("SELECT i.id FROM Item i");
 		@SuppressWarnings("unchecked")
-		List<String> ids = query.getResultList();
+		List<Long> ids = query.getResultList();
 		return ids;
 	}
 

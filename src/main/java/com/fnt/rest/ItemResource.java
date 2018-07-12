@@ -82,7 +82,7 @@ public class ItemResource {
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	@Path("ids")
 	public Response getAllItemIds() {
-		List<String> items = service.getAllItemIds();
+		List<Long> items = service.getAllItemIds();
 		return Response.ok(items).build();
 	}
 

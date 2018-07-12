@@ -55,7 +55,7 @@ public class CustomerService {
 		return dao.getAll();
 	}
 
-	public List<String> getAllCustomerIds() {
+	public List<Long> getAllCustomerIds() {
 		return dao.getAllCustomerIds();
 	}
 

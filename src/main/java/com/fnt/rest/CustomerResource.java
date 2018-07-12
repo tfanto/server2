@@ -81,7 +81,7 @@ public class CustomerResource {
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	@Path("ids")
 	public Response getAllCustomerIds() {
-		List<String> items = service.getAllCustomerIds();
+		List<Long> items = service.getAllCustomerIds();
 		return Response.ok(items).build();
 	}
 

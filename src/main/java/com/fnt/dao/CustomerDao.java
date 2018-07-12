@@ -39,10 +39,10 @@ public class CustomerDao {
 		return query.getResultList();
 	}
 
-	public List<String> getAllCustomerIds() {
+	public List<Long> getAllCustomerIds() {
 		Query query = em.createQuery("SELECT c.id FROM Customer c");
 		@SuppressWarnings("unchecked")
-		List<String> ids = query.getResultList();
+		List<Long> ids = query.getResultList();
 		return ids;
 	}
 
