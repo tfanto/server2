@@ -29,12 +29,12 @@ public class CustomerDao {
 		em.remove(customer);
 	}
 
-	public Customer get(String id) {
+	public Customer get(Long id) {
 		Customer ret = em.find(Customer.class, id);
 		return ret;
 	}
 
-	public Boolean exists(String id) {
+	public Boolean exists(Long id) {
 		Customer ret = em.find(Customer.class, id);
 		return ret != null;
 	}
@@ -43,11 +43,11 @@ public class CustomerDao {
 		TypedQuery<Customer> query = em.createNamedQuery(Customer.CUSTOMER_GET_ALL, Customer.class);
 		return query.getResultList();
 	}
-	
+
 	public List<String> getAllCustomerIds() {
 		Query query = em.createQuery("SELECT c.id FROM Customer c");
 		@SuppressWarnings("unchecked")
-		List<String> ids = query.getResultList();		
+		List<String> ids = query.getResultList();
 		return ids;
 	}
 

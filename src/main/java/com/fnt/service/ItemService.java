@@ -45,7 +45,7 @@ public class ItemService {
 
 	}
 
-	public void delete(String id) {
+	public void delete(Long id) {
 
 		if (!dao.exists(id)) {
 			return;
@@ -54,7 +54,7 @@ public class ItemService {
 		dao.delete(service);
 	}
 
-	public Item get(String id) {
+	public Item get(Long id) {
 		if (id == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Id is null");
 		}

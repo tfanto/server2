@@ -30,12 +30,12 @@ public class ItemDao {
 		em.remove(item);
 	}
 
-	public Item get(String id) {
+	public Item get(Long id) {
 		Item ret = em.find(Item.class, id);
 		return ret;
 	}
-	
-	public Boolean exists(String id) {
+
+	public Boolean exists(Long id) {
 		Item ret = em.find(Item.class, id);
 		return ret != null;
 	}
@@ -44,27 +44,25 @@ public class ItemDao {
 		TypedQuery<Item> query = em.createNamedQuery(Item.ITEM_GET_ALL, Item.class);
 		return query.getResultList();
 	}
-	
+
 	public List<String> getAllItemIds() {
 		Query query = em.createQuery("SELECT i.id FROM Item i");
 		@SuppressWarnings("unchecked")
-		List<String> ids = query.getResultList();		
+		List<String> ids = query.getResultList();
 		return ids;
 	}
 
-		
 	public int deleteAll() {
 		Query query = em.createQuery("DELETE FROM Item");
 		return query.executeUpdate();
 	}
 
 	public List<ItemView1> getAllForOrdering() {
-		
+
 		Query query = em.createQuery("SELECT i FROM ItemView1 i", ItemView1.class);
 		@SuppressWarnings("unchecked")
-		List<ItemView1> rs = query.getResultList();		
+		List<ItemView1> rs = query.getResultList();
 		return rs;
 	}
-
 
 }

@@ -53,7 +53,6 @@ public class CustomerOrderService {
 
 		String internalOrderNumber = UUID.randomUUID().toString();
 
-
 		head.setInternalordernumber(internalOrderNumber);
 		customerOrderDao.createHeader(head);
 
@@ -69,7 +68,7 @@ public class CustomerOrderService {
 				primaryKey.setInternalordernumber(internalOrderNumber);
 				line.setPrimaryKey(primaryKey);
 
-				String itemId = line.getItemId();
+				Long itemId = line.getItemId();
 				if (itemId == null) {
 					throw new IllegalArgumentException("Order line Item Id is null line + " + lineNumber);
 				}
@@ -102,7 +101,7 @@ public class CustomerOrderService {
 		}
 	}
 
-	private void handleMissingItems(String customerId, String internalOrderNumber, String itemId) {
+	private void handleMissingItems(Long customerId, String internalOrderNumber, Long itemId) {
 
 		// restorder or just skip that line ?
 		// notify the user in each case

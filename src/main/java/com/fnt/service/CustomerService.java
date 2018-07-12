@@ -43,7 +43,7 @@ public class CustomerService {
 
 	}
 
-	public void delete(String id) {
+	public void delete(Long id) {
 
 		if (!dao.exists(id)) {
 			return;
@@ -52,7 +52,7 @@ public class CustomerService {
 		dao.delete(service);
 	}
 
-	public Customer get(String id) {
+	public Customer get(Long id) {
 		if (id == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Id is null");
 		}
@@ -63,7 +63,7 @@ public class CustomerService {
 	public List<Customer> getAll() {
 		return dao.getAll();
 	}
-	
+
 	public List<String> getAllCustomerIds() {
 		return dao.getAllCustomerIds();
 	}

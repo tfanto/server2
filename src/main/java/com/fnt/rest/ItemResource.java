@@ -48,7 +48,7 @@ public class ItemResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(value = "{id}")
 	@RolesAllowed({ "ADMIN", "USER" })
-	public Response delete(@PathParam("id") String id) {
+	public Response delete(@PathParam("id") Long id) {
 		service.delete(id);
 		return Response.ok().build();
 	}
@@ -58,7 +58,7 @@ public class ItemResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(value = "{id}")
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	public Response get(@PathParam("id") String id) {
+	public Response get(@PathParam("id") Long id) {
 		Item fetched = service.get(id);
 		if (fetched == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Does not exist : " + id).build();
@@ -75,7 +75,7 @@ public class ItemResource {
 		List<Item> items = service.getAll();
 		return Response.ok(items).build();
 	}
-	
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ public class ItemResource {
 		List<String> items = service.getAllItemIds();
 		return Response.ok(items).build();
 	}
-	
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -95,8 +95,6 @@ public class ItemResource {
 		List<ItemView1> items = service.getAllForOrdering();
 		return Response.ok(items).build();
 	}
-
-
 
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
