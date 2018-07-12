@@ -53,10 +53,6 @@ public class ItemService {
 		return fetched;
 	}
 
-	public List<Item> getAll() {
-		return dao.getAll();
-	}
-
 	public List<Long> getAllItemIds() {
 		return dao.getAllItemIds();
 	}
@@ -67,6 +63,36 @@ public class ItemService {
 
 	public List<ItemView1> getAllForOrdering() {
 		return dao.getAllForOrdering();
+	}
+
+	public List<Item> search(String itemnumber, String description,String sortorder) {
+
+
+
+		return dao.search(itemnumber, description, sortorder);
+
+	}
+
+	// throws NumberFormatException if not an Integer
+	Integer ensureInteger(String str) {
+		if (str == null) {
+			return 0;
+		}
+		if (str.length() < 1) {
+			return 0;
+		}
+		return Integer.parseInt(str);
+	}
+
+	// throws NumberFormatException if not an Integer
+	Double ensureDouble(String str) {
+		if (str == null) {
+			return 0.0D;
+		}
+		if (str.length() < 1) {
+			return 0.0D;
+		}
+		return Double.parseDouble(str);
 	}
 
 }

@@ -1,6 +1,8 @@
 package com.fnt.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -10,6 +12,7 @@ import javax.persistence.TypedQuery;
 
 import com.fnt.entity.Item;
 import com.fnt.entity.ItemView1;
+import com.fnt.sys.AppException;
 
 @Stateless
 public class ItemDao {
@@ -35,11 +38,6 @@ public class ItemDao {
 		return ret;
 	}
 
-	public List<Item> getAll() {
-		TypedQuery<Item> query = em.createNamedQuery(Item.ITEM_GET_ALL, Item.class);
-		return query.getResultList();
-	}
-
 	public List<Long> getAllItemIds() {
 		Query query = em.createQuery("SELECT i.id FROM Item i");
 		@SuppressWarnings("unchecked")
@@ -58,6 +56,54 @@ public class ItemDao {
 		@SuppressWarnings("unchecked")
 		List<ItemView1> rs = query.getResultList();
 		return rs;
+	}
+
+	public List<Item> search(String itemnumber, String description, String sortorder) {
+
+		sortorder = sortorder.toLowerCase();
+		sortorder = "u." + sortorder;
+		sortorder = sortorder.replaceAll(",", ",u.");
+		String sort = " order by " + sortorder;
+		String where_and = " where ";
+		String sql = "select u  from Item u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (itemnumber.length() > 0) {
+			sql += where_and;
+
+			if (itemnumber.indexOf("%") < 0) {
+				sql += " u.itemnumber = :itemnumber";
+			} else {
+				sql += " u.itemnumber like :itemnumber";
+			}
+			params.put("itemnumber", itemnumber);
+			where_and = " and ";
+		}
+		if (description.length() > 0) {
+			sql += where_and;
+
+			if (description.indexOf("%") < 0) {
+				sql += " u.description = :description";
+			} else {
+				sql += " u.description like :description";
+			}
+			params.put("description", description);
+			where_and = " and ";
+		}
+
+		sql += sort;
+		TypedQuery<Item> query = em.createQuery(sql, Item.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+
+		List<Item> rs = query.getResultList();
+
+		if (rs.size() > 500) {
+			throw new AppException(400, "To many rows in resultset. Please refine your search criteria");
+		}
+		return rs;
+
 	}
 
 }
