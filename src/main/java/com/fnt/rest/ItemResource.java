@@ -1,5 +1,7 @@
 package com.fnt.rest;
 
+import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
@@ -12,6 +14,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -48,7 +51,7 @@ public class ItemResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(value = "{id}")
 	@RolesAllowed({ "ADMIN", "USER" })
-	public Response delete(@PathParam("id") String id) {
+	public Response delete(@PathParam("id") Long id) {
 		service.delete(id);
 		return Response.ok().build();
 	}
@@ -58,7 +61,7 @@ public class ItemResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(value = "{id}")
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	public Response get(@PathParam("id") String id) {
+	public Response get(@PathParam("id") Long id) {
 		Item fetched = service.get(id);
 		if (fetched == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Does not exist : " + id).build();
@@ -71,21 +74,30 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	public Response getAll() {
-		List<Item> items = service.getAll();
+	@Path("search")
+	public Response search(@QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description,
+			@QueryParam("sortorder") String sortorder) {
+
+		Decoder decoder = Base64.getDecoder();
+
+		String itemnumberStr = new String(decoder.decode(itemnumber));
+		String descriptionStr = new String(decoder.decode(description));
+		String sortorderStr = new String(decoder.decode(sortorder));
+
+		List<Item> items = service.search(itemnumberStr, descriptionStr, sortorderStr);
 		return Response.ok(items).build();
 	}
-	
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	@Path("ids")
 	public Response getAllItemIds() {
-		List<String> items = service.getAllItemIds();
+		List<Long> items = service.getAllItemIds();
 		return Response.ok(items).build();
 	}
-	
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -95,8 +107,6 @@ public class ItemResource {
 		List<ItemView1> items = service.getAllForOrdering();
 		return Response.ok(items).build();
 	}
-
-
 
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)

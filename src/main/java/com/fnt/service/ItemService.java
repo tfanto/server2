@@ -24,9 +24,6 @@ public class ItemService {
 		if (item == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity is null. Nothing to persist");
 		}
-		if (dao.exists(item.getId())) {
-			throw new AppException(HTTP_PRECONDITION_FAILED, "Record already exist");
-		}
 		return dao.create(item);
 	}
 
@@ -38,23 +35,17 @@ public class ItemService {
 		if (item.getId() == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
-		if (!dao.exists(item.getId())) {
-			throw new AppException(HTTP_NOT_FOUND, "Record does not exist");
-		}
 		return dao.update(item);
 
 	}
 
-	public void delete(String id) {
+	public void delete(Long id) {
 
-		if (!dao.exists(id)) {
-			return;
-		}
 		Item service = get(id);
 		dao.delete(service);
 	}
 
-	public Item get(String id) {
+	public Item get(Long id) {
 		if (id == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Id is null");
 		}
@@ -62,11 +53,7 @@ public class ItemService {
 		return fetched;
 	}
 
-	public List<Item> getAll() {
-		return dao.getAll();
-	}
-
-	public List<String> getAllItemIds() {
+	public List<Long> getAllItemIds() {
 		return dao.getAllItemIds();
 	}
 
@@ -76,6 +63,36 @@ public class ItemService {
 
 	public List<ItemView1> getAllForOrdering() {
 		return dao.getAllForOrdering();
+	}
+
+	public List<Item> search(String itemnumber, String description,String sortorder) {
+
+
+
+		return dao.search(itemnumber, description, sortorder);
+
+	}
+
+	// throws NumberFormatException if not an Integer
+	Integer ensureInteger(String str) {
+		if (str == null) {
+			return 0;
+		}
+		if (str.length() < 1) {
+			return 0;
+		}
+		return Integer.parseInt(str);
+	}
+
+	// throws NumberFormatException if not an Integer
+	Double ensureDouble(String str) {
+		if (str == null) {
+			return 0.0D;
+		}
+		if (str.length() < 1) {
+			return 0.0D;
+		}
+		return Double.parseDouble(str);
 	}
 
 }

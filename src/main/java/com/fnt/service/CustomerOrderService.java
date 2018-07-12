@@ -6,18 +6,15 @@ import java.util.UUID;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 import com.fnt.dao.CustomerDao;
 import com.fnt.dao.CustomerOrderDao;
 import com.fnt.dao.ItemDao;
-import com.fnt.dao.NumberSerieDao;
 import com.fnt.dto.CustomerOrder;
 import com.fnt.entity.CustomerOrderHead;
 import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
 import com.fnt.entity.Item;
-import com.fnt.entity.NumberSerie;
 import com.fnt.message.AppJMSMessageProducer;
 
 @Stateless
@@ -28,9 +25,6 @@ public class CustomerOrderService {
 
 	@Inject
 	private ItemDao itemDao;
-
-	@Inject
-	private NumberSerieDao numberSerieDao;
 
 	@Inject
 	private AppJMSMessageProducer queueProducer;
@@ -50,15 +44,11 @@ public class CustomerOrderService {
 		if (head.getCustomerId() == null) {
 			throw new IllegalArgumentException("Customer Order Header Primary Key Customer Id is null");
 		}
-		if (!customerDao.exists(head.getCustomerId())) {
-			throw new IllegalArgumentException("Customer does not exist " + customerOrder.getHead().getCustomerId());
-		}
 		if (head.getDate() == null) {
 			head.setDate(LocalDateTime.now());
 		}
 
 		String internalOrderNumber = UUID.randomUUID().toString();
-
 
 		head.setInternalordernumber(internalOrderNumber);
 		customerOrderDao.createHeader(head);
@@ -75,7 +65,7 @@ public class CustomerOrderService {
 				primaryKey.setInternalordernumber(internalOrderNumber);
 				line.setPrimaryKey(primaryKey);
 
-				String itemId = line.getItemId();
+				Long itemId = line.getItemId();
 				if (itemId == null) {
 					throw new IllegalArgumentException("Order line Item Id is null line + " + lineNumber);
 				}
@@ -108,7 +98,7 @@ public class CustomerOrderService {
 		}
 	}
 
-	private void handleMissingItems(String customerId, String internalOrderNumber, String itemId) {
+	private void handleMissingItems(Long customerId, String internalOrderNumber, Long itemId) {
 
 		// restorder or just skip that line ?
 		// notify the user in each case
