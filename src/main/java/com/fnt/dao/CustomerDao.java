@@ -1,6 +1,8 @@
 package com.fnt.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -34,8 +36,47 @@ public class CustomerDao {
 		return ret;
 	}
 
-	public List<Customer> getAll() {
-		TypedQuery<Customer> query = em.createNamedQuery(Customer.CUSTOMER_GET_ALL, Customer.class);
+	public List<Customer> search(String customernumber, String name, String sortorder) {
+		
+		sortorder = sortorder.toLowerCase();
+		sortorder = "u." + sortorder;
+		sortorder = sortorder.replaceAll(",", ",u.");
+		String sort = " order by " + sortorder;
+		String where_and = " where ";
+		String sql = "select u  from Customer u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (customernumber.length() > 0) {
+			sql += where_and;
+
+			if (customernumber.indexOf("%") < 0) {
+				sql += " u.customernumber = :customernumber";
+			} else {
+				sql += " u.customernumber like :customernumber";
+			}
+			params.put("customernumber", customernumber);
+			where_and = " and ";
+		}
+
+		if (name.length() > 0) {
+			sql += where_and;
+
+			if (name.indexOf("%") < 0) {
+				sql += " u.name = :name";
+			} else {
+				sql += " u.name like :name";
+			}
+			params.put("name", name);
+			where_and = " and ";
+		}
+
+		sql += sort;
+
+		TypedQuery<Customer> query = em.createQuery(sql, Customer.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+
 		return query.getResultList();
 	}
 

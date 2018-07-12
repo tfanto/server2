@@ -1,5 +1,7 @@
 package com.fnt.rest;
 
+import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
@@ -12,6 +14,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -70,8 +73,17 @@ public class CustomerResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	public Response getAll() {
-		List<Customer> items = service.getAll();
+	@Path(value = "search")
+	public Response search(@QueryParam("customernumber") String customernumber, @QueryParam("name") String name,
+			@QueryParam("sortorder") String sortorder) {
+
+		Decoder decoder = Base64.getDecoder();
+		String cn = new String(decoder.decode(customernumber));
+		String n = new String(decoder.decode(name));
+		String so = new String(decoder.decode(sortorder));
+
+		List<Customer> items = service.search(cn, n, so);
+
 		return Response.ok(items).build();
 	}
 

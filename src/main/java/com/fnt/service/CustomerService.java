@@ -51,8 +51,9 @@ public class CustomerService {
 		return fetched;
 	}
 
-	public List<Customer> getAll() {
-		return dao.getAll();
+	public List<Customer> search(String customerNumber, String name, String sortorder) {
+		return dao.search(customerNumber, name, sortorder);
+
 	}
 
 	public List<Long> getAllCustomerIds() {
