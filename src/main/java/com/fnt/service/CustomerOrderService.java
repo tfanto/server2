@@ -1,5 +1,6 @@
 package com.fnt.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -7,6 +8,8 @@ import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fnt.dao.CustomerDao;
 import com.fnt.dao.CustomerOrderDao;
 import com.fnt.dao.ItemDao;
@@ -16,6 +19,7 @@ import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
 import com.fnt.entity.Item;
 import com.fnt.message.AppJMSMessageProducer;
+import com.fnt.sys.AppException;
 
 @Stateless
 public class CustomerOrderService {
@@ -32,21 +36,33 @@ public class CustomerOrderService {
 	@Inject
 	private CustomerDao customerDao;
 
-	public void create(CustomerOrder customerOrder) {
+	private ObjectMapper MAPPER = null;
+
+	@Inject
+	private CustomerOrderService service;
+
+	public CustomerOrderService() {
+		MAPPER = new ObjectMapper();
+		MAPPER.registerModule(new JavaTimeModule());
+	}
+
+	public void createBatch(CustomerOrder customerOrder) {
 
 		if (customerOrder == null) {
-			throw new IllegalArgumentException("Customer Order is null");
+			throw new AppException(412, "Customer Order is null");
 		}
 		CustomerOrderHead head = customerOrder.getHead();
 		if (head == null) {
-			throw new IllegalArgumentException("Customer Order Header is null");
+			throw new AppException(412, "Customer Order Header is null");
 		}
-		if (head.getCustomerId() == null) {
-			throw new IllegalArgumentException("Customer Order Header Primary Key Customer Id is null");
+		if (head.getCustomerid() == null) {
+			throw new AppException(412, "Customer Order Header Primary Key Customer Id is null");
 		}
 		if (head.getDate() == null) {
 			head.setDate(LocalDateTime.now());
 		}
+		// todo get this from logged on user
+		head.setChangedby("SYS");
 
 		String internalOrderNumber = UUID.randomUUID().toString();
 
@@ -76,17 +92,17 @@ public class CustomerOrderService {
 					line.setPricePerItem(fetchedItem.getPrice());
 				} else {
 					// if not in db - what to do
-					handleMissingItems(customerOrder.getHead().getCustomerId(), internalOrderNumber, itemId);
+					handleMissingItems(customerOrder.getHead().getCustomerid(), internalOrderNumber, itemId);
 				}
 
 				// null check
 				if (line.getNumberOfItems() == null) {
-					throw new IllegalArgumentException("Order line Number of Items  + " + lineNumber);
+					throw new AppException(412, "Order line Number of Items  + " + lineNumber);
 				}
 
 				// n - check
 				if (line.getNumberOfItems() == 0) {
-					throw new IllegalArgumentException("Order line Number of items + " + lineNumber);
+					throw new AppException(412, "Order line Number of items + " + lineNumber);
 				}
 
 				if (line.getDate() == null) {
@@ -96,6 +112,33 @@ public class CustomerOrderService {
 				customerOrderDao.addOrderLine(internalOrderNumber, lineNumber, line);
 			}
 		}
+	}
+
+	public CustomerOrderHead createHeader(String headJson) {
+
+		if (headJson == null) {
+			throw new AppException(412, "Customer Orderheader is null");
+		}
+		CustomerOrderHead head;
+		try {
+			head = MAPPER.readValue(headJson, CustomerOrderHead.class);
+		} catch (IOException e) {
+			throw new AppException(412, "Customer Orderheader invalid");
+		}
+
+		if (head.getCustomerid() == null) {
+			throw new AppException(412, "Customer Order Header Primary Key Customer Id is null");
+		}
+		if (head.getDate() == null) {
+			head.setDate(LocalDateTime.now());
+		}
+		
+		// todo get this from logged on user
+		head.setChangedby("SYS");
+		String internalOrderNumber = UUID.randomUUID().toString();
+		head.setInternalordernumber(internalOrderNumber);
+		return customerOrderDao.createHeader(head);
+
 	}
 
 	private void handleMissingItems(Long customerId, String internalOrderNumber, Long itemId) {

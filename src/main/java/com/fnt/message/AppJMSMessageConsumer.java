@@ -35,7 +35,7 @@ public class AppJMSMessageConsumer implements MessageListener {
 		try {
 			final String json = message.getBody(String.class);
 			CustomerOrder customerOrder = MAPPER.readValue(json, CustomerOrder.class);
-			customerOrderService.create(customerOrder);
+			customerOrderService.createBatch(customerOrder);
 		} catch (JMSException | IOException e) {
 			System.out.println(e.toString());
 		}
