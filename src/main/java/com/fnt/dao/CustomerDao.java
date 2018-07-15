@@ -36,12 +36,23 @@ public class CustomerDao {
 		return ret;
 	}
 
+	public Customer get(String customernumber) {
+		TypedQuery<Customer> query = em.createNamedQuery(Customer.CUSTOMER_GET_BY_CUSTOMERNUMBER, Customer.class);
+		query.setParameter("customernumber", customernumber);
+		Customer customer = query.getSingleResult();
+		return customer;
+	}
+
 	public List<Customer> search(String customernumber, String name, String sortorder) {
+
+		String sort = "";
+		if (sortorder.length() > 0 ) {
+			sortorder = sortorder.toLowerCase();
+			sortorder = "u." + sortorder;
+			sortorder = sortorder.replaceAll(",", ",u.");
+			sort = " order by " + sortorder;			
+		}
 		
-		sortorder = sortorder.toLowerCase();
-		sortorder = "u." + sortorder;
-		sortorder = sortorder.replaceAll(",", ",u.");
-		String sort = " order by " + sortorder;
 		String where_and = " where ";
 		String sql = "select u  from Customer u ";
 		Map<String, Object> params = new HashMap<>();
@@ -76,7 +87,6 @@ public class CustomerDao {
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
-
 		return query.getResultList();
 	}
 
@@ -91,5 +101,6 @@ public class CustomerDao {
 		Query query = em.createQuery("DELETE FROM Customer");
 		return query.executeUpdate();
 	}
+
 
 }

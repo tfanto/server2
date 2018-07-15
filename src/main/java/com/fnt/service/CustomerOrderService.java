@@ -14,6 +14,7 @@ import com.fnt.dao.CustomerDao;
 import com.fnt.dao.CustomerOrderDao;
 import com.fnt.dao.ItemDao;
 import com.fnt.dto.CustomerOrder;
+import com.fnt.dto.CustomerOrderHeadListView;
 import com.fnt.entity.CustomerOrderHead;
 import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
@@ -132,7 +133,7 @@ public class CustomerOrderService {
 		if (head.getDate() == null) {
 			head.setDate(LocalDateTime.now());
 		}
-		
+
 		// todo get this from logged on user
 		head.setChangedby("SYS");
 		String internalOrderNumber = UUID.randomUUID().toString();
@@ -150,5 +151,11 @@ public class CustomerOrderService {
 
 	public void post(String customerOrderJson) {
 		queueProducer.post(customerOrderJson);
+	}
+
+	public List<CustomerOrderHeadListView> search(String customernumber, String name, String date, String orderstatus, String changedby, String sortorder) {
+
+		List<CustomerOrderHeadListView> rs = customerOrderDao.search(customernumber, name, date, orderstatus, changedby, sortorder);
+		return rs;
 	}
 }

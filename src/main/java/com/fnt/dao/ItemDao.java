@@ -60,10 +60,14 @@ public class ItemDao {
 
 	public List<Item> search(String itemnumber, String description, String sortorder) {
 
-		sortorder = sortorder.toLowerCase();
-		sortorder = "u." + sortorder;
-		sortorder = sortorder.replaceAll(",", ",u.");
-		String sort = " order by " + sortorder;
+		String sort = "";
+		if (sortorder.length() > 0 ) {
+			sortorder = sortorder.toLowerCase();
+			sortorder = "u." + sortorder;
+			sortorder = sortorder.replaceAll(",", ",u.");
+			sort = " order by " + sortorder;			
+		}
+		
 		String where_and = " where ";
 		String sql = "select u  from Item u ";
 		Map<String, Object> params = new HashMap<>();
@@ -99,8 +103,8 @@ public class ItemDao {
 
 		List<Item> rs = query.getResultList();
 
-		if (rs.size() > 500) {
-			throw new AppException(400, "To many rows in resultset. Please refine your search criteria");
+		if (rs.size() > 2500) {
+			throw new AppException(400, "To many rows (2500) in resultset. Please refine your search criteria");
 		}
 		return rs;
 

@@ -1,6 +1,12 @@
 package com.fnt.sys;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.ejb.Stateless;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import javax.ws.rs.core.SecurityContext;
 
 @Stateless
@@ -19,6 +25,19 @@ public class AppCommonLib {
 		}
 		if (!ctx.isUserInRole(role)) {
 			throw new IllegalAccessError("Not allowed");
+		}
+	}
+
+	public <T> void validate(T obj) {
+
+		Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+		Set<ConstraintViolation<T>> constraintViolations = validator.validate(obj);
+		if (constraintViolations.size() > 0) {
+			Set<String> violationMessages = new HashSet<>();
+			for (ConstraintViolation<T> constraintViolation : constraintViolations) {
+				violationMessages.add(constraintViolation.getPropertyPath() + ": " + constraintViolation.getMessage());
+			}
+			throw new AppException(412, violationMessages);
 		}
 	}
 
