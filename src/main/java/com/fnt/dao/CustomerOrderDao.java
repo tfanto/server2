@@ -1,5 +1,6 @@
 package com.fnt.dao;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +71,7 @@ public class CustomerOrderDao {
 
 	}
 
-	public List<CustomerOrderHeadListView> search(String customernumber, String name, String orderdate, String orderstatus, String changedby, String sortorder) {
+	public List<CustomerOrderHeadListView> search(String customernumber, String name, LocalDate orderdate, String orderstatus, String changedby, String sortorder) {
 
 		// @formatter:off
 		
@@ -97,8 +98,8 @@ public class CustomerOrderDao {
 		String sort = "";
 		if (sortorder.length() > 0) {
 			sortorder = sortorder.toLowerCase();
-			//sortorder = "coh." + sortorder;
-			//sortorder = sortorder.replaceAll(",", ",coh.");
+			// sortorder = "coh." + sortorder;
+			// sortorder = sortorder.replaceAll(",", ",coh.");
 			sort = " order by " + sortorder;
 		}
 
@@ -123,22 +124,16 @@ public class CustomerOrderDao {
 			params.put("name", name);
 			where_and = " and ";
 		}
-		
-		
-		
-		if (orderdate.length() > 0) {
+
+		if (orderdate != null) {
 			sql += where_and;
-			if (orderdate.indexOf("%") < 0) {
-				sql += " cast(customer_order_head.date as character varying(30)) = :orderdate";
-			} else {
-				sql += " cast(customer_order_head.date as character varying(30)) like :orderdate";
-			}
-			params.put("orderdate", orderdate);
+			
+				sql += " customer_order_head.date  >= :orderdate";
+
+				params.put("orderdate", orderdate);
 			where_and = " and ";
 		}
-		
-		
-		
+
 		if (orderstatus.length() > 0) {
 			sql += where_and;
 			if (orderstatus.indexOf("%") < 0) {
@@ -149,7 +144,6 @@ public class CustomerOrderDao {
 			params.put("orderstatus", orderstatus);
 			where_and = " and ";
 		}
-		
 
 		if (changedby.length() > 0) {
 			sql += where_and;

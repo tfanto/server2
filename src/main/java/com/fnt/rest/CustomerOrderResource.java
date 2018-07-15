@@ -64,7 +64,7 @@ public class CustomerOrderResource {
 	public Response search(@QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr, @QueryParam("orderstatus") String orderstatusStr,
 			@QueryParam("changedby") String changedbyStr, @QueryParam("sortorder") String sortorderStr) throws JsonProcessingException {
 
-		Decoder decoder = Base64.getDecoder();
+		Decoder decoder = Base64.getUrlDecoder();
 		String customernumber = new String(decoder.decode(customernumberStr));
 		String name = new String(decoder.decode(nameStr));
 		String date = new String(decoder.decode(dateStr));
@@ -73,7 +73,7 @@ public class CustomerOrderResource {
 		String sortorder = new String(decoder.decode(sortorderStr));
 
 		List<CustomerOrderHeadListView> list = service.search(customernumber, name, date, orderstatus, changedby, sortorder);
-		
+
 		String json = MAPPER.writeValueAsString(list);
 
 		return Response.ok(json).build();

@@ -1,7 +1,8 @@
 package com.fnt.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,7 +61,7 @@ public class CustomerOrderService {
 			throw new AppException(412, "Customer Order Header Primary Key Customer Id is null");
 		}
 		if (head.getDate() == null) {
-			head.setDate(LocalDateTime.now());
+			head.setDate(LocalDate.now());
 		}
 		// todo get this from logged on user
 		head.setChangedby("SYS");
@@ -131,7 +132,7 @@ public class CustomerOrderService {
 			throw new AppException(412, "Customer Order Header Primary Key Customer Id is null");
 		}
 		if (head.getDate() == null) {
-			head.setDate(LocalDateTime.now());
+			head.setDate(LocalDate.now());
 		}
 
 		// todo get this from logged on user
@@ -155,7 +156,13 @@ public class CustomerOrderService {
 
 	public List<CustomerOrderHeadListView> search(String customernumber, String name, String date, String orderstatus, String changedby, String sortorder) {
 
-		List<CustomerOrderHeadListView> rs = customerOrderDao.search(customernumber, name, date, orderstatus, changedby, sortorder);
+		LocalDate dateTime = null;
+		if (date.length() > 0) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			dateTime = LocalDate.parse(date, formatter);
+		}
+
+		List<CustomerOrderHeadListView> rs = customerOrderDao.search(customernumber, name, dateTime, orderstatus, changedby, sortorder);
 		return rs;
 	}
 }
