@@ -14,9 +14,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fnt.dto.CustomerOrder;
 import com.fnt.service.CustomerOrderService;
 
-@MessageDriven(mappedName = AppJMSConstants.APP_MESSAGE_CONSUMER, activationConfig = {
-		@ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = AppJMSConstants.APP_QUEUE),
-		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = AppJMSConstants.APP_DESTINATION_TYPE), })
+// @formatter:off
+@MessageDriven(mappedName = AppJMSConstants.APP_MESSAGE_CONSUMER, 
+               activationConfig = { @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = AppJMSConstants.APP_QUEUE),
+		                            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = AppJMSConstants.APP_DESTINATION_TYPE), 
+		                          }               )
 public class AppJMSMessageConsumer implements MessageListener {
 
 	private ObjectMapper MAPPER = null;
@@ -35,10 +37,11 @@ public class AppJMSMessageConsumer implements MessageListener {
 		try {
 			final String json = message.getBody(String.class);
 			CustomerOrder customerOrder = MAPPER.readValue(json, CustomerOrder.class);
-			customerOrderService.create(customerOrder);
+			customerOrderService.createBatch(customerOrder);
 		} catch (JMSException | IOException e) {
 			System.out.println(e.toString());
 		}
 	}
 
 }
+//@formatter:on
