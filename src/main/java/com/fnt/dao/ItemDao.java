@@ -1,5 +1,6 @@
 package com.fnt.dao;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import com.fnt.dto.SearchData;
 import com.fnt.entity.Item;
 import com.fnt.entity.ItemView1;
 import com.fnt.sys.AppException;
@@ -61,13 +63,13 @@ public class ItemDao {
 	public List<Item> search(String itemnumber, String description, String sortorder) {
 
 		String sort = "";
-		if (sortorder.length() > 0 ) {
+		if (sortorder.length() > 0) {
 			sortorder = sortorder.toLowerCase();
 			sortorder = "u." + sortorder;
 			sortorder = sortorder.replaceAll(",", ",u.");
-			sort = " order by " + sortorder;			
+			sort = " order by " + sortorder;
 		}
-		
+
 		String where_and = " where ";
 		String sql = "select u  from Item u ";
 		Map<String, Object> params = new HashMap<>();
@@ -108,6 +110,50 @@ public class ItemDao {
 		}
 		return rs;
 
+	}
+
+	public List<SearchData> prompt(String itemnumber, String description) {
+		String where_and = " where ";
+		String sql = "select u  from Item u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (itemnumber.length() > 0) {
+			sql += where_and;
+
+			if (itemnumber.indexOf("%") < 0) {
+				sql += " u.itemnumber = :itemnumber";
+			} else {
+				sql += " u.itemnumber like :itemnumber";
+			}
+			params.put("itemnumber", itemnumber);
+			where_and = " and ";
+		}
+
+		if (description.length() > 0) {
+			sql += where_and;
+
+			if (description.indexOf("%") < 0) {
+				sql += " u.description = :description";
+			} else {
+				sql += " u.description like :description";
+			}
+			params.put("description", description);
+			where_and = " and ";
+		}
+
+		sql += " order by u.itemnumber, u.description";
+
+		TypedQuery<Item> query = em.createQuery(sql, Item.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		List<Item> tmpList = query.getResultList();
+		List<SearchData> ret = new ArrayList<>();
+		tmpList.forEach(item -> {
+			ret.add(new SearchData(item.getItemnumber(), item.getDescription(), String.valueOf(item.getPrice())));
+		});
+		tmpList.clear();
+		return ret;
 	}
 
 }
