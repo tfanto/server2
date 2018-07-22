@@ -18,6 +18,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
 import com.fnt.service.CustomerService;
 
@@ -74,8 +75,7 @@ public class CustomerResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	@Path(value = "search")
-	public Response search(@QueryParam("customernumber") String customernumber, @QueryParam("name") String name,
-			@QueryParam("sortorder") String sortorder) {
+	public Response search(@QueryParam("customernumber") String customernumber, @QueryParam("name") String name, @QueryParam("sortorder") String sortorder) {
 
 		Decoder decoder = Base64.getDecoder();
 		String cn = new String(decoder.decode(customernumber));
@@ -85,6 +85,22 @@ public class CustomerResource {
 		List<Customer> items = service.search(cn, n, so);
 
 		return Response.ok(items).build();
+	}
+
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@Path(value = "prompt")
+	public Response search(@QueryParam("customernumber") String cn, @QueryParam("name") String n) {
+
+		Decoder decoder = Base64.getDecoder();
+		String customernumber = new String(decoder.decode(cn));
+		String name = new String(decoder.decode(n));
+
+		List<SearchData> rs = service.prompt(customernumber, name);
+
+		return Response.ok(rs).build();
 	}
 
 	@GET

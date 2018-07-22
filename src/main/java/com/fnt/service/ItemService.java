@@ -6,6 +6,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import com.fnt.dao.ItemDao;
+import com.fnt.dto.SearchData;
 import com.fnt.entity.Item;
 import com.fnt.entity.ItemView1;
 import com.fnt.sys.AppException;
@@ -93,6 +94,10 @@ public class ItemService {
 			return 0.0D;
 		}
 		return Double.parseDouble(str);
+	}
+
+	public List<SearchData> prompt(String itemnumber, String description) {
+		return dao.prompt( itemnumber, description);
 	}
 
 }

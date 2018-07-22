@@ -76,30 +76,24 @@ public class CustomerOrderDao {
 		// @formatter:off
 		
 		String sql = 
-		
+				
 		"select customer_order_head.ordernumber as id, "  +
 	    "   customer.customernumber as customernumber, " +
 	    "   customer.name as name,  " +
 	    "   customer_order_head.date as orderdate , "  +
 	    "   customer_order_head.changedby as changedby, " + 
-	    "   customer_order_head.status as orderstatus, " +
-	    "   cast(customer_order_head.date as character varying(30)) as dateforsearch, " +
-	    "   cast(customer_order_head.status as character varying(3)) as statusforsearch" +		
+	    "   customer_order_head.status as orderstatus " +
 	    "  from customer_order_head  " + 
         "  join customer  " +
         "     on customer.id = customer_order_head.customerid ";
-  
-		
+  		
 		// @formatter:on
 
-		sortorder = sortorder.toLowerCase();
 		String where_and = " where ";
 		Map<String, Object> params = new HashMap<>();
 		String sort = "";
 		if (sortorder.length() > 0) {
 			sortorder = sortorder.toLowerCase();
-			// sortorder = "coh." + sortorder;
-			// sortorder = sortorder.replaceAll(",", ",coh.");
 			sort = " order by " + sortorder;
 		}
 

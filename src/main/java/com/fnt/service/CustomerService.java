@@ -6,6 +6,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import com.fnt.dao.CustomerDao;
+import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
 import com.fnt.sys.AppException;
 
@@ -62,6 +63,10 @@ public class CustomerService {
 
 	public int deleteAll() {
 		return dao.deleteAll();
+	}
+
+	public List<SearchData> prompt(String customernumber, String name) {
+		return dao.prompt(customernumber, name);
 	}
 
 }
