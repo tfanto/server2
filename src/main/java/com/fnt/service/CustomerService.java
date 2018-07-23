@@ -51,6 +51,14 @@ public class CustomerService {
 		Customer fetched = dao.get(id);
 		return fetched;
 	}
+	
+	public Customer getByCustomernumber(String customernumber) {
+		if (customernumber == null) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Customernumber is null");
+		}
+		Customer fetched = dao.getByCustomernumber(customernumber);
+		return fetched;
+	}
 
 	public List<Customer> search(String customerNumber, String name, String sortorder) {
 		return dao.search(customerNumber, name, sortorder);
