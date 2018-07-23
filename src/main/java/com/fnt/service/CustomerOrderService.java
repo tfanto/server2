@@ -1,6 +1,5 @@
 package com.fnt.service;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -16,6 +15,7 @@ import com.fnt.dao.CustomerOrderDao;
 import com.fnt.dao.ItemDao;
 import com.fnt.dto.CustomerOrder;
 import com.fnt.dto.CustomerOrderHeadListView;
+import com.fnt.entity.Customer;
 import com.fnt.entity.CustomerOrderHead;
 import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
@@ -116,32 +116,25 @@ public class CustomerOrderService {
 		}
 	}
 
-	public CustomerOrderHead createHeader(String headJson) {
-
-		if (headJson == null) {
-			throw new AppException(412, "Customer Orderheader is null");
-		}
-		CustomerOrderHead head;
-		try {
-			head = MAPPER.readValue(headJson, CustomerOrderHead.class);
-		} catch (IOException e) {
-			throw new AppException(412, "Customer Orderheader invalid");
-		}
-
-		if (head.getCustomerid() == null) {
-			throw new AppException(412, "Customer Order Header Primary Key Customer Id is null");
-		}
-		if (head.getDate() == null) {
-			head.setDate(LocalDate.now());
-		}
-
-		// todo get this from logged on user
-		head.setChangedby("SYS");
-		String internalOrderNumber = UUID.randomUUID().toString();
-		head.setInternalordernumber(internalOrderNumber);
-		return customerOrderDao.createHeader(head);
-
-	}
+	/*
+	 * crap ? public CustomerOrderHead createHeader(String headJson) {
+	 * 
+	 * if (headJson == null) { throw new AppException(412,
+	 * "Customer Orderheader is null"); } CustomerOrderHead head; try { head =
+	 * MAPPER.readValue(headJson, CustomerOrderHead.class); } catch (IOException e)
+	 * { throw new AppException(412, "Customer Orderheader invalid"); }
+	 * 
+	 * if (head.getCustomerid() == null) { throw new AppException(412,
+	 * "Customer Order Header Primary Key Customer Id is null"); } if
+	 * (head.getDate() == null) { head.setDate(LocalDate.now()); }
+	 * 
+	 * // todo get this from logged on user head.setChangedby("SYS"); String
+	 * internalOrderNumber = UUID.randomUUID().toString();
+	 * head.setInternalordernumber(internalOrderNumber); return
+	 * customerOrderDao.createHeader(head);
+	 * 
+	 * }
+	 */
 
 	private void handleMissingItems(Long customerId, String internalOrderNumber, Long itemId) {
 
@@ -164,5 +157,41 @@ public class CustomerOrderService {
 
 		List<CustomerOrderHeadListView> rs = customerOrderDao.search(customernumber, name, dateTime, orderstatus, changedby, sortorder);
 		return rs;
+	}
+
+	public CustomerOrderHead createHeader(String customernumber, String date, String changedby) {
+
+		// datum
+		LocalDate dateTime = null;
+		if (date.length() > 0) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			dateTime = LocalDate.parse(date, formatter);
+		}
+
+		// kundid från kundnummer
+		if (customernumber == null) {
+			throw new AppException(412, "Customernumber is null. Cannot place an customerorder");
+		}
+		Customer customer = customerDao.getByCustomernumber(customernumber);
+		if (customer == null) {
+			throw new AppException(412, "Customer does not exist." + customernumber);
+		}
+
+		// interna ordernumret
+		String internalordernumber = UUID.randomUUID().toString();
+
+		// status prliminär = 1
+		// chgby
+		if ((changedby == null) || (changedby.trim().length() < 1)) {
+			changedby = "SYS";
+		}
+		CustomerOrderHead customerOrderHead = new CustomerOrderHead();
+		customerOrderHead.setChangedby(changedby);
+		customerOrderHead.setCustomerid(customer.getId());
+		customerOrderHead.setDate(dateTime);
+		customerOrderHead.setInternalordernumber(internalordernumber);
+		customerOrderHead.setStatus(1);
+		CustomerOrderHead created = customerOrderDao.createHeader(customerOrderHead);
+		return created;
 	}
 }

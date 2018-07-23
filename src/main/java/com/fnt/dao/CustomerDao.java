@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -38,11 +40,15 @@ public class CustomerDao {
 		return ret;
 	}
 
-	public Customer get(String customernumber) {
+	public Customer getByCustomernumber(String customernumber) {
 		TypedQuery<Customer> query = em.createNamedQuery(Customer.CUSTOMER_GET_BY_CUSTOMERNUMBER, Customer.class);
 		query.setParameter("customernumber", customernumber);
-		Customer customer = query.getSingleResult();
-		return customer;
+		try {
+			Customer customer = query.getSingleResult();
+			return customer;
+		} catch (NoResultException | NonUniqueResultException e) {
+			return null;
+		}
 	}
 
 	public List<Customer> search(String customernumber, String name, String sortorder) {
@@ -133,7 +139,7 @@ public class CustomerDao {
 			params.put("name", name);
 			where_and = " and ";
 		}
-		
+
 		sql += " order by u.customernumber, u.name";
 
 		TypedQuery<Customer> query = em.createQuery(sql, Customer.class);

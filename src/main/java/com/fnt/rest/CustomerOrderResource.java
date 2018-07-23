@@ -51,9 +51,15 @@ public class CustomerOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("header")
-	public Response createCustomerOrderHeader(String customerOrderHeadJson) {
-		CustomerOrderHead obj = service.createHeader(customerOrderHeadJson);
-		return Response.ok(obj).build();
+	public Response createCustomerOrderHeader(@QueryParam("customernumber") String customernumberStr, @QueryParam("date") String dateStr) throws JsonProcessingException {
+		
+		Decoder decoder = Base64.getUrlDecoder();
+		String customernumber = new String(decoder.decode(customernumberStr));
+		String date = new String(decoder.decode(dateStr));
+		
+		CustomerOrderHead obj = service.createHeader(customernumber, date, "SYS");
+		String json = MAPPER.writeValueAsString(obj);
+		return Response.ok(json).build();
 	}
 
 	@GET
