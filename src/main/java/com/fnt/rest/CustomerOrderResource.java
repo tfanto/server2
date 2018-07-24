@@ -9,7 +9,9 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -52,12 +54,29 @@ public class CustomerOrderResource {
 	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("header")
 	public Response createCustomerOrderHeader(@QueryParam("customernumber") String customernumberStr, @QueryParam("date") String dateStr) throws JsonProcessingException {
-		
+
 		Decoder decoder = Base64.getUrlDecoder();
 		String customernumber = new String(decoder.decode(customernumberStr));
 		String date = new String(decoder.decode(dateStr));
-		
+
 		CustomerOrderHead obj = service.createHeader(customernumber, date, "SYS");
+		String json = MAPPER.writeValueAsString(obj);
+		return Response.ok(json).build();
+	}
+
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER" })
+	@Path("header")
+	public Response updateCustomerOrderHeader(@QueryParam("ordernumber") String ordernumberStr, @QueryParam("customernumber") String customernumberStr, @QueryParam("date") String dateStr) throws JsonProcessingException {
+
+		Decoder decoder = Base64.getUrlDecoder();
+		String customernumber = new String(decoder.decode(customernumberStr));
+		String date = new String(decoder.decode(dateStr));
+		Long ordernumber = Long.parseLong(ordernumberStr);
+
+		CustomerOrderHead obj = service.updateHeader(ordernumber, customernumber, date, "SYS");
 		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
 	}
@@ -82,6 +101,18 @@ public class CustomerOrderResource {
 
 		String json = MAPPER.writeValueAsString(list);
 
+		return Response.ok(json).build();
+	}
+
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@Path(value = "{ordernumber}")
+	public Response getById(@PathParam("ordernumber") String ordernumberStr) throws JsonProcessingException {
+		Long ordernumber = Long.parseLong(ordernumberStr);
+		CustomerOrderHead obj = service.getById(ordernumber);
+		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
 	}
 

@@ -121,10 +121,10 @@ public class CustomerOrderDao {
 
 		if (orderdate != null) {
 			sql += where_and;
-			
-				sql += " customer_order_head.date  >= :orderdate";
 
-				params.put("orderdate", orderdate);
+			sql += " customer_order_head.date  >= :orderdate";
+
+			params.put("orderdate", orderdate);
 			where_and = " and ";
 		}
 
@@ -167,6 +167,20 @@ public class CustomerOrderDao {
 		}
 
 		return resultSet;
+
+	}
+
+	public CustomerOrderHead getById(Long ordernumber) {
+		return em.find(CustomerOrderHead.class, ordernumber);
+	}
+
+	public CustomerOrderHead updateHeader(Long ordernumber, Long customerid, LocalDate date, String changedby) {
+
+		CustomerOrderHead header = em.find(CustomerOrderHead.class, ordernumber);
+		header.setChangedby(changedby);
+		header.setDate(date);
+		header.setCustomerid(customerid);
+		return em.merge(header);
 
 	}
 

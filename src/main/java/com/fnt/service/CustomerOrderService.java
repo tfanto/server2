@@ -194,4 +194,24 @@ public class CustomerOrderService {
 		CustomerOrderHead created = customerOrderDao.createHeader(customerOrderHead);
 		return created;
 	}
+
+	public CustomerOrderHead getById(Long id) {
+		return customerOrderDao.getById(id);
+	}
+
+	public CustomerOrderHead updateHeader(Long ordernumber, String customernumber, String date, String changedby) {
+		
+		LocalDate dateTime = null;
+		if (date.length() > 0) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			dateTime = LocalDate.parse(date, formatter);
+		}
+
+		
+		Customer customer = customerDao.getByCustomernumber(customernumber);
+		if (customer == null) {
+			throw new AppException(412, "Customer does not exist." + customernumber);
+		}		
+		return customerOrderDao.updateHeader(ordernumber, customer.getId(), dateTime, changedby);
+	}
 }
