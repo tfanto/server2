@@ -21,7 +21,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fnt.dto.CustomerOrderHeadListView;
+import com.fnt.dto.CustomerOrderLineListView;
 import com.fnt.entity.CustomerOrderHead;
+import com.fnt.entity.CustomerOrderLine;
 import com.fnt.service.CustomerOrderService;
 
 @Path("customerorder")
@@ -60,6 +62,39 @@ public class CustomerOrderResource {
 		String date = new String(decoder.decode(dateStr));
 
 		CustomerOrderHead obj = service.createHeader(customernumber, date, "SYS");
+		String json = MAPPER.writeValueAsString(obj);
+		return Response.ok(json).build();
+	}
+
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER" })
+	@Path("line")
+	public Response createCustomerOrderLine(@QueryParam("internalordernumber") String internalordernumberStr, @QueryParam("itemnumber") String itemnumberStr, @QueryParam("units") String unitsStr,
+			@QueryParam("priceperitem") String priceperitemStr) throws JsonProcessingException {
+
+		Decoder decoder = Base64.getUrlDecoder();
+		String internalordernumber = new String(decoder.decode(internalordernumberStr));
+		String itemnumber = new String(decoder.decode(itemnumberStr));
+		String units = new String(decoder.decode(unitsStr));
+		String priceperitem = new String(decoder.decode(priceperitemStr));
+
+		CustomerOrderLine obj = service.createLine(internalordernumber, itemnumber, units, priceperitem, "SYS");
+		String json = MAPPER.writeValueAsString(obj);
+		return Response.ok(json).build();
+	}
+
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER" })	
+	@Path(value = "linesfororder/{internalordernumber}")
+	public Response getLinesForOrder(@PathParam("internalordernumber") String internalordernumberStr) throws JsonProcessingException {
+
+		Decoder decoder = Base64.getUrlDecoder();
+		String internalordernumber = new String(decoder.decode(internalordernumberStr));
+		List<CustomerOrderLineListView> obj = service.getLinesForOrder(internalordernumber);
 		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
 	}
