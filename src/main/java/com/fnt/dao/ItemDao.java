@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -38,6 +40,17 @@ public class ItemDao {
 	public Item get(Long id) {
 		Item ret = em.find(Item.class, id);
 		return ret;
+	}
+
+	public Item getByItemNumber(String itemnumber) {
+		TypedQuery<Item> query = em.createNamedQuery(Item.ITEM_GET_BY_ITEMNUMBER, Item.class);
+		query.setParameter("itemnumber", itemnumber);
+		try {
+			Item obj = query.getSingleResult();
+			return obj;
+		} catch (NoResultException | NonUniqueResultException e) {
+			return null;
+		}
 	}
 
 	public List<Long> getAllItemIds() {

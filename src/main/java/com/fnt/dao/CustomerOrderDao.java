@@ -13,6 +13,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import com.fnt.dto.CustomerOrderHeadListView;
+import com.fnt.dto.CustomerOrderLineListView;
 import com.fnt.entity.CustomerOrderHead;
 import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
@@ -57,14 +58,14 @@ public class CustomerOrderDao {
 		query2.executeUpdate();
 	}
 
-	public void addOrderLine(String internalOrderNumber, int lineNumber, CustomerOrderLine customerOrderLine) {
+	public CustomerOrderLine addOrderLine(String internalOrderNumber, long lineNumber, CustomerOrderLine customerOrderLine) {
 
 		CustomerOrderLinePK primaryKey = new CustomerOrderLinePK();
 		primaryKey.setInternalordernumber(internalOrderNumber);
 		primaryKey.setLineNumber(lineNumber);
-		customerOrderLine.setPrimaryKey(primaryKey);
+		customerOrderLine.setPrimarykey(primaryKey);
 		em.persist(customerOrderLine);
-
+		return customerOrderLine;
 	}
 
 	public void deleteOrderLine(Integer orderNumber, Integer orderLineNumber) {
@@ -121,10 +122,10 @@ public class CustomerOrderDao {
 
 		if (orderdate != null) {
 			sql += where_and;
-			
-				sql += " customer_order_head.date  >= :orderdate";
 
-				params.put("orderdate", orderdate);
+			sql += " customer_order_head.date  >= :orderdate";
+
+			params.put("orderdate", orderdate);
 			where_and = " and ";
 		}
 
@@ -168,6 +169,53 @@ public class CustomerOrderDao {
 
 		return resultSet;
 
+	}
+
+	public CustomerOrderHead getById(Long ordernumber) {
+		return em.find(CustomerOrderHead.class, ordernumber);
+	}
+
+	public CustomerOrderHead updateHeader(Long ordernumber, Long customerid, LocalDate date, String changedby) {
+
+		CustomerOrderHead header = em.find(CustomerOrderHead.class, ordernumber);
+		header.setChangedby(changedby);
+		header.setDate(date);
+		header.setCustomerid(customerid);
+		return em.merge(header);
+
+	}
+
+	public List<CustomerOrderLineListView> getLinesForOrder(String internalordernumber) {
+		// @formatter:off
+		
+		String sql = 
+				
+		"select customer_order_line.internalordernumber as internalordernumber, " + 
+		"   customer_order_line.linenumber as linenumber, " + 
+		"   customer_order_line.date as date, " +
+		"   item.itemnumber as itemnumber, " +
+		"   item.description as description, " +
+		"   customer_order_line.number_of_items as numberofitems, " + 
+		"   customer_order_line.price_per_item as priceperitem " +
+		"      from customer_order_line  " +
+		"      join item  " +
+		"         on customer_order_line.item_id = item.id  " +
+		"             where customer_order_line.internalordernumber = :internalordernumber";
+		  		
+		// @formatter:on
+
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("internalordernumber", internalordernumber);
+
+		List<CustomerOrderLineListView> resultSet = new ArrayList<>();
+		@SuppressWarnings("unchecked")
+		List<Object[]> rs = query.getResultList();
+		for (Object record[] : rs) {
+			CustomerOrderLineListView line = new CustomerOrderLineListView(record);
+			resultSet.add(line);
+		}
+
+		return resultSet;
 	}
 
 }
