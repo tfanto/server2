@@ -16,7 +16,6 @@ import javax.persistence.TypedQuery;
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Item;
 import com.fnt.entity.ItemView1;
-import com.fnt.sys.AppException;
 
 @Stateless
 public class ItemDao {
@@ -73,7 +72,7 @@ public class ItemDao {
 		return rs;
 	}
 
-	public List<Item> search(String itemnumber, String description, String sortorder) {
+	public List<Item> paginatesearch(Integer offset, Integer limit, String itemnumber, String description, String sortorder) {
 
 		String sort = "";
 		if (sortorder.length() > 0) {
@@ -116,11 +115,52 @@ public class ItemDao {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 
+		query.setFirstResult(offset);
+		query.setMaxResults(limit);
 		List<Item> rs = query.getResultList();
 
-		if (rs.size() > 2500) {
-			throw new AppException(400, "To many rows (2500) in resultset. Please refine your search criteria");
+		return rs;
+
+	}
+
+	/* the total number of records in a paginated search must have the same search criteria as the paginated query
+	 * 
+	 */
+	public Long paginatecount(String itemnumber, String description) {
+
+		String where_and = " where ";
+		String sql = "select count(u.id)  from Item u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (itemnumber.length() > 0) {
+			sql += where_and;
+
+			if (itemnumber.indexOf("%") < 0) {
+				sql += " u.itemnumber = :itemnumber";
+			} else {
+				sql += " u.itemnumber like :itemnumber";
+			}
+			params.put("itemnumber", itemnumber);
+			where_and = " and ";
 		}
+		if (description.length() > 0) {
+			sql += where_and;
+
+			if (description.indexOf("%") < 0) {
+				sql += " u.description = :description";
+			} else {
+				sql += " u.description like :description";
+			}
+			params.put("description", description);
+			where_and = " and ";
+		}
+
+		TypedQuery<Long> query = em.createQuery(sql, Long.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		Long rs = query.getSingleResult();
+
 		return rs;
 
 	}
