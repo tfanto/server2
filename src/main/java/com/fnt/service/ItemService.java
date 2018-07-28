@@ -66,12 +66,14 @@ public class ItemService {
 		return dao.getAllForOrdering();
 	}
 
-	public List<Item> search(String itemnumber, String description,String sortorder) {
+	public List<Item> paginatesearch(Integer offset, Integer limit, String itemnumber, String description, String sortorder) {
+		return dao.paginatesearch(offset, limit, itemnumber, description, sortorder);
+	}
 
-
-
-		return dao.search(itemnumber, description, sortorder);
-
+	// the total number of records in a paginated search must have the same search
+	// criteria as the paginated query
+	public Long paginatecount(String itemnumber, String description) {
+		return dao.paginatecount(itemnumber, description);
 	}
 
 	// throws NumberFormatException if not an Integer
@@ -97,7 +99,7 @@ public class ItemService {
 	}
 
 	public List<SearchData> prompt(String itemnumber, String description) {
-		return dao.prompt( itemnumber, description);
+		return dao.prompt(itemnumber, description);
 	}
 
 }

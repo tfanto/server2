@@ -75,26 +75,41 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	@Path("search")
-	public Response search(@QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description,
-			@QueryParam("sortorder") String sortorder) {
+	@Path("paginatesearch")
+	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description, @QueryParam("sortorder") String sortorder) {
 
 		Decoder decoder = Base64.getDecoder();
-
+		String offsetStr = new String(decoder.decode(offs));
+		String limitStr = new String(decoder.decode(lim));
 		String itemnumberStr = new String(decoder.decode(itemnumber));
 		String descriptionStr = new String(decoder.decode(description));
 		String sortorderStr = new String(decoder.decode(sortorder));
-
-		List<Item> items = service.search(itemnumberStr, descriptionStr, sortorderStr);
+		Integer offset = Integer.parseInt(offsetStr);
+		Integer limit = Integer.parseInt(limitStr);
+		List<Item> items = service.paginatesearch(offset, limit, itemnumberStr, descriptionStr, sortorderStr);
 		return Response.ok(items).build();
 	}
-	
+
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@Path("paginatecount")
+	public Response paginatecount(@QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description) {
+
+		Decoder decoder = Base64.getDecoder();
+		String itemnumberStr = new String(decoder.decode(itemnumber));
+		String descriptionStr = new String(decoder.decode(description));
+		Long items = service.paginatecount(itemnumberStr, descriptionStr);
+		return Response.ok(items).build();
+	}
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	@Path(value = "prompt")
-	public Response search(@QueryParam("itemnumber") String cn, @QueryParam("description") String n) {
+	public Response prompt(@QueryParam("itemnumber") String cn, @QueryParam("description") String n) {
 
 		Decoder decoder = Base64.getDecoder();
 		String itemnumber = new String(decoder.decode(cn));
@@ -104,7 +119,6 @@ public class ItemResource {
 
 		return Response.ok(rs).build();
 	}
-
 
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
