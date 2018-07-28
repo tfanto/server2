@@ -118,13 +118,12 @@ public class ItemDao {
 		query.setFirstResult(offset);
 		query.setMaxResults(limit);
 		List<Item> rs = query.getResultList();
-
 		return rs;
 
 	}
 
-	/* the total number of records in a paginated search must have the same search criteria as the paginated query
-	 * 
+	/* 
+	 * the total number of records in a paginated search must have the same search criteria as the paginated query (filter part)
 	 */
 	public Long paginatecount(String itemnumber, String description) {
 
@@ -160,9 +159,7 @@ public class ItemDao {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 		Long rs = query.getSingleResult();
-
 		return rs;
-
 	}
 
 	public List<SearchData> prompt(String itemnumber, String description) {

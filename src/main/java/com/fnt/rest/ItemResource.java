@@ -114,9 +114,7 @@ public class ItemResource {
 		Decoder decoder = Base64.getDecoder();
 		String itemnumber = new String(decoder.decode(cn));
 		String description = new String(decoder.decode(n));
-
 		List<SearchData> rs = service.prompt(itemnumber, description);
-
 		return Response.ok(rs).build();
 	}
 

@@ -51,7 +51,7 @@ public class CustomerService {
 		Customer fetched = dao.get(id);
 		return fetched;
 	}
-	
+
 	public Customer getByCustomernumber(String customernumber) {
 		if (customernumber == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Customernumber is null");
@@ -60,9 +60,12 @@ public class CustomerService {
 		return fetched;
 	}
 
-	public List<Customer> search(String customerNumber, String name, String sortorder) {
-		return dao.search(customerNumber, name, sortorder);
-
+	public List<Customer> paginatesearch(Integer offset, Integer limit, String customerNumber, String name, String sortorder) {
+		return dao.paginatesearch(offset, limit, customerNumber, name, sortorder);
+	}
+	
+	public Long paginatecount(String customernumber, String name) {
+		return dao.paginatecount(customernumber, name);
 	}
 
 	public List<Long> getAllCustomerIds() {
@@ -76,5 +79,6 @@ public class CustomerService {
 	public List<SearchData> prompt(String customernumber, String name) {
 		return dao.prompt(customernumber, name);
 	}
+
 
 }
