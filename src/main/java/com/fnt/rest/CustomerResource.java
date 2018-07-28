@@ -74,25 +74,44 @@ public class CustomerResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	@Path(value = "search")
-	public Response search(@QueryParam("customernumber") String customernumber, @QueryParam("name") String name, @QueryParam("sortorder") String sortorder) {
+	@Path(value = "paginatesearch")
+	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("customernumber") String customernumber, @QueryParam("name") String name, @QueryParam("sortorder") String sortorder) {
 
 		Decoder decoder = Base64.getDecoder();
-		String cn = new String(decoder.decode(customernumber));
-		String n = new String(decoder.decode(name));
-		String so = new String(decoder.decode(sortorder));
-
-		List<Customer> items = service.search(cn, n, so);
-
+		String offsetStr = new String(decoder.decode(offs));
+		String limitStr = new String(decoder.decode(lim));
+		String customernumberStr = new String(decoder.decode(customernumber));
+		String nameStr = new String(decoder.decode(name));
+		String sortorderStr = new String(decoder.decode(sortorder));
+		Integer offset = Integer.parseInt(offsetStr);
+		Integer limit = Integer.parseInt(limitStr);
+		List<Customer> items = service.paginatesearch(offset, limit, customernumberStr, nameStr, sortorderStr);
 		return Response.ok(items).build();
 	}
+	
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@Path("paginatecount")
+	public Response paginatecount(@QueryParam("customernumber") String customernumber, @QueryParam("name") String name) {
+
+		Decoder decoder = Base64.getDecoder();
+		String customernumberStr = new String(decoder.decode(customernumber));
+		String nameStr = new String(decoder.decode(name));
+		Long items = service.paginatecount(customernumberStr, nameStr);
+		return Response.ok(items).build();
+	}
+
+	
+	
 
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	@Path(value = "prompt")
-	public Response search(@QueryParam("customernumber") String cn, @QueryParam("name") String n) {
+	public Response prompt(@QueryParam("customernumber") String cn, @QueryParam("name") String n) {
 
 		Decoder decoder = Base64.getDecoder();
 		String customernumber = new String(decoder.decode(cn));
