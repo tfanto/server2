@@ -1,5 +1,6 @@
 package com.fnt.dao;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,7 +73,7 @@ public class CustomerOrderDao {
 
 	}
 
-	public List<CustomerOrderHeadListView> search(String customernumber, String name, LocalDate orderdate, String orderstatus, String changedby, String sortorder) {
+	public List<CustomerOrderHeadListView> paginatesearch(Integer offset, Integer limit, String customernumber, String name, LocalDate orderdate, String orderstatus, String changedby, String sortorder) {
 
 		// @formatter:off
 		
@@ -160,15 +161,93 @@ public class CustomerOrderDao {
 		}
 
 		List<CustomerOrderHeadListView> resultSet = new ArrayList<>();
+		query.setFirstResult(offset);
+		query.setMaxResults(limit);
 		@SuppressWarnings("unchecked")
 		List<Object[]> rs = query.getResultList();
 		for (Object record[] : rs) {
 			CustomerOrderHeadListView line = new CustomerOrderHeadListView(record);
 			resultSet.add(line);
 		}
-
 		return resultSet;
+	}
 
+	public Long paginatecount(String customernumber, String name, LocalDate orderdate, String orderstatus, String changedby) {
+		// @formatter:off
+		
+		String sql = 
+				
+		"select count(customer.id) "  +
+	    "  from customer_order_head  " + 
+        "  join customer  " +
+        "     on customer.id = customer_order_head.customerid ";
+  		
+		// @formatter:on
+
+		String where_and = " where ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (customernumber.length() > 0) {
+			sql += where_and;
+			if (customernumber.indexOf("%") < 0) {
+				sql += " customer.customernumber = :customernumber";
+			} else {
+				sql += " customer.customernumber like :customernumber";
+			}
+			params.put("customernumber", customernumber);
+			where_and = " and ";
+		}
+
+		if (name.length() > 0) {
+			sql += where_and;
+			if (name.indexOf("%") < 0) {
+				sql += " customer.name = :name";
+			} else {
+				sql += " customer.name like :name";
+			}
+			params.put("name", name);
+			where_and = " and ";
+		}
+
+		if (orderdate != null) {
+			sql += where_and;
+			sql += " customer_order_head.date  >= :orderdate";
+			params.put("orderdate", orderdate);
+			where_and = " and ";
+		}
+
+		if (orderstatus.length() > 0) {
+			sql += where_and;
+			if (orderstatus.indexOf("%") < 0) {
+				sql += " cast(customer_order_head.status as character varying(3)) = :orderstatus";
+			} else {
+				sql += " cast(customer_order_head.status as character varying(3)) like :orderstatus";
+			}
+			params.put("orderstatus", orderstatus);
+			where_and = " and ";
+		}
+
+		if (changedby.length() > 0) {
+			sql += where_and;
+			if (changedby.indexOf("%") < 0) {
+				sql += " customer_order_head.changedby = :changedby";
+			} else {
+				sql += " customer_order_head.changedby like :changedby";
+			}
+			params.put("changedby", changedby);
+			where_and = " and ";
+		}
+
+		Query query = em.createNativeQuery(sql);
+
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+
+		// ugly but ok its a biginteger
+		Object rs = query.getSingleResult();
+		BigInteger records = (BigInteger) rs;
+		return records.longValue();
 	}
 
 	public CustomerOrderHead getById(Long ordernumber) {
