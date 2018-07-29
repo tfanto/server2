@@ -1,5 +1,6 @@
 package com.fnt.dao;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -243,8 +244,10 @@ public class CustomerOrderDao {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 
+		// ugly but ok its a biginteger
 		Object rs = query.getSingleResult();
-		return (Long) rs;
+		BigInteger records = (BigInteger) rs;
+		return records.longValue();
 	}
 
 	public CustomerOrderHead getById(Long ordernumber) {
