@@ -88,7 +88,7 @@ public class CustomerOrderResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER" })	
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "linesfororder/{internalordernumber}")
 	public Response getLinesForOrder(@PathParam("internalordernumber") String internalordernumberStr) throws JsonProcessingException {
 
@@ -120,9 +120,33 @@ public class CustomerOrderResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	@Path(value = "search")
-	public Response search(@QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr, @QueryParam("orderstatus") String orderstatusStr,
-			@QueryParam("changedby") String changedbyStr, @QueryParam("sortorder") String sortorderStr) throws JsonProcessingException {
+	@Path(value = "paginatesearch")
+	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr,
+			@QueryParam("orderstatus") String orderstatusStr, @QueryParam("changedby") String changedbyStr, @QueryParam("sortorder") String sortorderStr) throws JsonProcessingException {
+
+		Decoder decoder = Base64.getUrlDecoder();
+		String offsetStr = new String(decoder.decode(offs));
+		String limitStr = new String(decoder.decode(lim));
+		Integer offset = Integer.parseInt(offsetStr);
+		Integer limit = Integer.parseInt(limitStr);
+		String customernumber = new String(decoder.decode(customernumberStr));
+		String name = new String(decoder.decode(nameStr));
+		String date = new String(decoder.decode(dateStr));
+		String orderstatus = new String(decoder.decode(orderstatusStr));
+		String changedby = new String(decoder.decode(changedbyStr));
+		String sortorder = new String(decoder.decode(sortorderStr));
+		List<CustomerOrderHeadListView> list = service.paginatesearch(offset, limit, customernumber, name, date, orderstatus, changedby, sortorder);
+		String json = MAPPER.writeValueAsString(list);
+		return Response.ok(json).build();
+	}
+	
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@Path(value = "paginatecount")
+	public Response paginatecount(@QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr,
+			@QueryParam("orderstatus") String orderstatusStr, @QueryParam("changedby") String changedbyStr) throws JsonProcessingException {
 
 		Decoder decoder = Base64.getUrlDecoder();
 		String customernumber = new String(decoder.decode(customernumberStr));
@@ -130,14 +154,10 @@ public class CustomerOrderResource {
 		String date = new String(decoder.decode(dateStr));
 		String orderstatus = new String(decoder.decode(orderstatusStr));
 		String changedby = new String(decoder.decode(changedbyStr));
-		String sortorder = new String(decoder.decode(sortorderStr));
-
-		List<CustomerOrderHeadListView> list = service.search(customernumber, name, date, orderstatus, changedby, sortorder);
-
-		String json = MAPPER.writeValueAsString(list);
-
-		return Response.ok(json).build();
+		Long items = service.paginatecount(customernumber, name, date, orderstatus, changedby);
+		return Response.ok(items).build();
 	}
+
 
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)

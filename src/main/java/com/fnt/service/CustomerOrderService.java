@@ -145,7 +145,7 @@ public class CustomerOrderService {
 		queueProducer.post(customerOrderJson);
 	}
 
-	public List<CustomerOrderHeadListView> search(String customernumber, String name, String date, String orderstatus, String changedby, String sortorder) {
+	public List<CustomerOrderHeadListView> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String date, String orderstatus, String changedby, String sortorder) {
 
 		LocalDate dateTime = null;
 		if (date.length() > 0) {
@@ -153,9 +153,21 @@ public class CustomerOrderService {
 			dateTime = LocalDate.parse(date, formatter);
 		}
 
-		List<CustomerOrderHeadListView> rs = customerOrderDao.search(customernumber, name, dateTime, orderstatus, changedby, sortorder);
+		List<CustomerOrderHeadListView> rs = customerOrderDao.paginatesearch(offset, limit, customernumber, name, dateTime, orderstatus, changedby, sortorder);
 		return rs;
 	}
+	
+	public Long paginatecount(String customernumber, String name, String date, String orderstatus, String changedby) {
+		LocalDate dateTime = null;
+		if (date.length() > 0) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			dateTime = LocalDate.parse(date, formatter);
+		}
+		Long rs = customerOrderDao.paginatecount(customernumber, name, dateTime, orderstatus, changedby);
+		return rs;
+	}
+
+	
 
 	public CustomerOrderHead createHeader(String customernumber, String date, String changedby) {
 
@@ -236,5 +248,6 @@ public class CustomerOrderService {
 	public List<CustomerOrderLineListView> getLinesForOrder(String internalordernumber) {
 		return customerOrderDao.getLinesForOrder(internalordernumber);
 	}
+
 
 }
