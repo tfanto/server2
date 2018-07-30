@@ -123,9 +123,7 @@ public class CustomerOrderDao {
 
 		if (orderdate != null) {
 			sql += where_and;
-
 			sql += " customer_order_head.date  >= :orderdate";
-
 			params.put("orderdate", orderdate);
 			where_and = " and ";
 		}
