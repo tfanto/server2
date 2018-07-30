@@ -3,124 +3,106 @@ package com.fnt.service;
 import java.util.List;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
-import com.fnt.dao.LookupDao;
 import com.fnt.entity.Lookup;
 import com.fnt.entity.LookupPK;
+import com.fnt.sys.AppException;
 
 @Stateless
 public class LookupService {
 
-	@Inject
-	private LookupDao dao;
+	private static final Integer HTTP_PRECONDITION_FAILED = 412;
+
+	@PersistenceContext
+	private EntityManager em;
 
 	public Lookup create(Lookup record) {
-
 		if (record == null) {
-			throw new IllegalArgumentException("CustomCode cannot be null");
+			throw new AppException(HTTP_PRECONDITION_FAILED, "CustomCode cannot be null");
 		}
-
-		return dao.create(record);
-
+		em.persist(record);
+		return record;
 	}
 
 	public Lookup get(String constant, String code) {
 
-		if (constant == null) {
-			throw new IllegalArgumentException("Constant cannot be null");
+		if (constant == null || constant.trim().length() < 1) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Invalid constant value");
 		}
-		if (constant.trim().length() < 1) {
-			throw new IllegalArgumentException("Constant cannot be empty");
-		}
-		if (code == null) {
-			throw new IllegalArgumentException("Code cannot be null");
-		}
-		if (code.trim().length() < 1) {
-			throw new IllegalArgumentException("Code cannot be empty");
+		if (code == null || code.trim().length() < 1) {
+			throw new AppException(HTTP_PRECONDITION_FAILED,"Invalid code value");
 		}
 		LookupPK primaryKey = new LookupPK(constant.toUpperCase(), code);
-		return dao.get(primaryKey);
+		Lookup val = em.find(Lookup.class, primaryKey);
+		return val;
 	}
 
-	public Lookup get(LookupPK primaryKey) {
+	public Lookup update(Lookup lookUp) {
 
-		if (primaryKey == null) {
-			throw new IllegalArgumentException("CustomCodesPk cannot be null");
+		Lookup fetched = get(lookUp.getPrimaryKey().getConstant(), lookUp.getPrimaryKey().getCode());
+		if (fetched != null) {
+			fetched.setDescription(lookUp.getDescription());
+			fetched.setDatadate(lookUp.getDatadate());
+			fetched.setDatadouble(lookUp.getDatadouble());
+			fetched.setDatalong(lookUp.getDatalong());
+			fetched.setDatastr(lookUp.getDatastr());
 		}
-		return dao.get(primaryKey);
+		return fetched;
+	}
+
+	public void delete(String constant, String code) {
+
+		Lookup record = get(constant,code);
+		if (record != null) {
+			em.remove(record);
+		}
 	}
 
 	public Boolean exists(String constant, String code) {
 
-		if (constant == null) {
-			throw new IllegalArgumentException("Constant cannot be null");
+		try {
+			Lookup record = get(constant,code);
+			return record != null;
+		} catch (IllegalArgumentException e) {
+			return false;
 		}
-		if (constant.trim().length() < 1) {
-			throw new IllegalArgumentException("Constant cannot be empty");
-		}
-		if (code == null) {
-			throw new IllegalArgumentException("Code cannot be null");
-		}
-		if (code.trim().length() < 1) {
-			throw new IllegalArgumentException("Code cannot be empty");
-		}
-
-		LookupPK primaryKey = new LookupPK(constant.toUpperCase(), code);
-		return dao.exists(primaryKey);
-
-	}
-
-	public Lookup update(Lookup lookup) {
-
-		return dao.update(lookup);
-
-	}
-
-	public void delete(String constant, String code) {
-		if (constant == null) {
-			throw new IllegalArgumentException("Constant cannot be null");
-		}
-		if (constant.trim().length() < 1) {
-			throw new IllegalArgumentException("Constant cannot be empty");
-		}
-		if (code == null) {
-			throw new IllegalArgumentException("Code cannot be null");
-		}
-		if (code.trim().length() < 1) {
-			throw new IllegalArgumentException("Code cannot be empty");
-		}
-		LookupPK primaryKey = new LookupPK(constant.toUpperCase(), code);
-		dao.delete(primaryKey);
-
 	}
 
 	public List<Lookup> getAllFor(String constant) {
-		if (constant == null) {
-			throw new IllegalArgumentException("Constant cannot be null");
+		if (constant == null || constant.trim().length() < 1) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Invalid constant value");
 		}
-		if (constant.trim().length() < 1) {
-			throw new IllegalArgumentException("Constant cannot be empty");
-		}
-		return dao.getAllFor(constant.toUpperCase());
 
+		try {
+			TypedQuery<Lookup> query = em.createNamedQuery(Lookup.SYSVAL_GETALLFOR, Lookup.class);
+			query.setParameter("constant", constant);
+			return query.getResultList();
+		} catch (NoResultException e) {
+			return null;
+		}
 	}
 
 	public void deleteAllFor(String constant) {
-		if (constant == null) {
-			throw new IllegalArgumentException("Constant cannot be null");
-		}
-		if (constant.trim().length() < 1) {
-			throw new IllegalArgumentException("Constant cannot be empty");
-		}
-		dao.deleteAllFor(constant.toUpperCase());
 
+		List<Lookup> rs = getAllFor(constant);
+		if (rs != null) {
+			for (Lookup customCode : rs) {
+				em.remove(customCode);
+			}
+		}
 	}
 
 	public List<String> getAllConstants() {
-
-		return dao.getAllConstants();
-
+		try {
+			TypedQuery<String> query = em.createNamedQuery(Lookup.SYSVAL_GETALLCONSTANTS, String.class);
+			return query.getResultList();
+		} catch (NoResultException e) {
+			return null;
+		}
 	}
 
 }
