@@ -122,9 +122,9 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	@Path("ids")
-	public Response getAllItemIds() {
-		List<Long> items = service.getAllItemIds();
+	@Path("itemnumbers")
+	public Response getAllItemNumbers() {
+		List<String> items = service.getAllItemIds();
 		return Response.ok(items).build();
 	}
 

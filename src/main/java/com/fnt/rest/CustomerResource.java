@@ -126,8 +126,8 @@ public class CustomerResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
-	@Path("ids")
-	public Response getAllCustomerIds() {
+	@Path("orderinginfo")
+	public Response getAllCustomerNumbers() {
 		List<Long> items = service.getAllCustomerIds();
 		return Response.ok(items).build();
 	}

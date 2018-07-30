@@ -20,9 +20,8 @@ import com.fnt.sys.AppException;
 
 @Stateless
 public class ItemService {
-	
-	private static final Integer HTTP_PRECONDITION_FAILED = 412;
 
+	private static final Integer HTTP_PRECONDITION_FAILED = 412;
 
 	@PersistenceContext
 	private EntityManager em;
@@ -52,7 +51,7 @@ public class ItemService {
 		Item item = get(id);
 		em.remove(item);
 	}
-	
+
 	public void delete(Item item) {
 		em.remove(item);
 	}
@@ -76,10 +75,10 @@ public class ItemService {
 		}
 	}
 
-	public List<Long> getAllItemIds() {
-		Query query = em.createQuery("SELECT i.id FROM Item i");
+	public List<String> getAllItemIds() {
+		Query query = em.createQuery("SELECT i.itemnumber FROM Item i");
 		@SuppressWarnings("unchecked")
-		List<Long> ids = query.getResultList();
+		List<String> ids = query.getResultList();
 		return ids;
 	}
 
@@ -146,8 +145,9 @@ public class ItemService {
 
 	}
 
-	/* 
-	 * the total number of records in a paginated search must have the same search criteria as the paginated query (filter part)
+	/*
+	 * the total number of records in a paginated search must have the same search
+	 * criteria as the paginated query (filter part)
 	 */
 	public Long paginatecount(String itemnumber, String description) {
 

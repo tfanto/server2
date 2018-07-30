@@ -105,11 +105,10 @@ public class CustomerOrderService {
 					throw new AppException(412, "Order line Number of Items  + " + lineNumber);
 				}
 
-
 				if (line.getDate() == null) {
 					line.setDate(head.getDate());
 				}
-				createLine(internalordernumber, fetchedItem.getItemnumber(),line.getNumberofitems() ,fetchedItem.getPrice(), "SYS");
+				createLine(internalordernumber, lineNumber, fetchedItem.getItemnumber(), line.getNumberofitems(), fetchedItem.getPrice(), "SYS");
 			}
 		}
 	}
@@ -157,7 +156,7 @@ public class CustomerOrderService {
 		if ((changedby == null) || (changedby.trim().length() < 1)) {
 			changedby = "SYS";
 		}
-		
+
 		CustomerOrderHead customerOrderHead = new CustomerOrderHead();
 		customerOrderHead.setChangedby(changedby);
 		customerOrderHead.setCustomerid(customer.getId());
@@ -197,26 +196,34 @@ public class CustomerOrderService {
 		query2.executeUpdate();
 	}
 
-	public CustomerOrderLine createLine(String internalordernumber, String itemnumber, Integer numberofitems, Double priceperitem, String changedby) {
+	// from batch
+	public CustomerOrderLine createLine(String internalordernumber, Long linenumber, String itemnumber, Integer numberofitems, Double priceperitem, String changedby) {
 
 		// get item from db must have itemId
 		Item fetchedItem = itemService.getByItemNumber(itemnumber);
 		if (fetchedItem == null) {
 			throw new AppException(412, "Item does not exist." + itemnumber);
 		}
-		
+
 		CustomerOrderLine customerOrderLine = new CustomerOrderLine();
 		CustomerOrderLinePK primaryKey = new CustomerOrderLinePK();
 		primaryKey.setInternalordernumber(internalordernumber);
-		primaryKey.setLineNumber(System.currentTimeMillis());
+		primaryKey.setLineNumber(linenumber);
 		customerOrderLine.setPrimarykey(primaryKey);
-		
+
 		customerOrderLine.setDate(LocalDate.now());
 		customerOrderLine.setItemid(fetchedItem.getId());
 		customerOrderLine.setNumberofitems(numberofitems);
-		customerOrderLine.setPriceperitem(priceperitem);		
+		customerOrderLine.setPriceperitem(priceperitem);
 		em.persist(customerOrderLine);
 		return customerOrderLine;
+	}
+
+	// from interactive
+	public CustomerOrderLine createLine(String internalordernumber, String itemnumber, Integer numberofitems, Double priceperitem, String changedby) {
+
+		Long lineNumber = System.nanoTime(); // linenumber in timeorder  and with internalordernumber  is unique
+		return createLine(internalordernumber, lineNumber, itemnumber, numberofitems, priceperitem, changedby);
 	}
 
 	public void deleteOrderLine(Integer orderNumber, Integer orderLineNumber) {
@@ -422,12 +429,12 @@ public class CustomerOrderService {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			dateTime = LocalDate.parse(date, formatter);
 		}
-		
+
 		Customer customer = customerService.getByCustomernumber(customernumber);
 		if (customer == null) {
 			throw new AppException(412, "Customer does not exist." + customernumber);
 		}
-		
+
 		CustomerOrderHead header = em.find(CustomerOrderHead.class, ordernumber);
 		header.setChangedby(changedby);
 		header.setDate(dateTime);
