@@ -71,14 +71,14 @@ public class CustomerOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("line")
-	public Response createCustomerOrderLine(@QueryParam("internalordernumber") String internalordernumberStr, @QueryParam("itemnumber") String itemnumberStr, @QueryParam("units") String unitsStr,
-			@QueryParam("priceperitem") String priceperitemStr) throws JsonProcessingException {
+	public Response createCustomerOrderLine(@QueryParam("internalordernumber") String internalordernumberStr, @QueryParam("itemnumber") String itemnumberStr, @QueryParam("units") Integer units,
+			@QueryParam("priceperitem") Double priceperitem) throws JsonProcessingException {
 
 		Decoder decoder = Base64.getUrlDecoder();
 		String internalordernumber = new String(decoder.decode(internalordernumberStr));
 		String itemnumber = new String(decoder.decode(itemnumberStr));
-		String units = new String(decoder.decode(unitsStr));
-		String priceperitem = new String(decoder.decode(priceperitemStr));
+		//String units = new String(decoder.decode(unitsStr));
+		//String priceperitem = new String(decoder.decode(priceperitemStr));
 
 		CustomerOrderLine obj = service.createLine(internalordernumber, itemnumber, units, priceperitem, "SYS");
 		String json = MAPPER.writeValueAsString(obj);

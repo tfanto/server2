@@ -1,11 +1,18 @@
 package com.fnt.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
-import com.fnt.dao.CustomerDao;
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
 import com.fnt.sys.AppException;
@@ -14,16 +21,16 @@ import com.fnt.sys.AppException;
 public class CustomerService {
 
 	private static final Integer HTTP_PRECONDITION_FAILED = 412;
-	private static final Integer HTTP_NOT_FOUND = 404;
 
-	@Inject
-	private CustomerDao dao;
+	@PersistenceContext
+	private EntityManager em;
 
 	public Customer create(Customer customer) {
 		if (customer == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity is null. Nothing to persist");
 		}
-		return dao.create(customer);
+		em.persist(customer);
+		return customer;
 	}
 
 	public Customer update(Customer customer) {
@@ -34,51 +41,189 @@ public class CustomerService {
 		if (customer.getId() == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
-		return dao.update(customer);
 
+		return em.merge(customer);
 	}
 
 	public void delete(Long id) {
+		Customer customer = get(id);
+		em.remove(customer);
+	}
 
-		Customer service = get(id);
-		dao.delete(service);
+	public void delete(Customer customer) {
+		em.remove(customer);
 	}
 
 	public Customer get(Long id) {
 		if (id == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Id is null");
 		}
-		Customer fetched = dao.get(id);
-		return fetched;
+		Customer ret = em.find(Customer.class, id);
+		return ret;
 	}
 
 	public Customer getByCustomernumber(String customernumber) {
+
 		if (customernumber == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Customernumber is null");
 		}
-		Customer fetched = dao.getByCustomernumber(customernumber);
-		return fetched;
+		TypedQuery<Customer> query = em.createNamedQuery(Customer.CUSTOMER_GET_BY_CUSTOMERNUMBER, Customer.class);
+		query.setParameter("customernumber", customernumber);
+		try {
+			Customer customer = query.getSingleResult();
+			return customer;
+		} catch (NoResultException | NonUniqueResultException e) {
+			return null;
+		}
 	}
 
-	public List<Customer> paginatesearch(Integer offset, Integer limit, String customerNumber, String name, String sortorder) {
-		return dao.paginatesearch(offset, limit, customerNumber, name, sortorder);
+	public List<Customer> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String sortorder) {
+
+		String sort = "";
+		if (sortorder.length() > 0) {
+			sortorder = sortorder.toLowerCase();
+			sortorder = "u." + sortorder;
+			sortorder = sortorder.replaceAll(",", ",u.");
+			sort = " order by " + sortorder;
+		}
+
+		String where_and = " where ";
+		String sql = "select u  from Customer u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (customernumber.length() > 0) {
+			sql += where_and;
+
+			if (customernumber.indexOf("%") < 0) {
+				sql += " u.customernumber = :customernumber";
+			} else {
+				sql += " u.customernumber like :customernumber";
+			}
+			params.put("customernumber", customernumber);
+			where_and = " and ";
+		}
+
+		if (name.length() > 0) {
+			sql += where_and;
+
+			if (name.indexOf("%") < 0) {
+				sql += " u.name = :name";
+			} else {
+				sql += " u.name like :name";
+			}
+			params.put("name", name);
+			where_and = " and ";
+		}
+
+		sql += sort;
+
+		TypedQuery<Customer> query = em.createQuery(sql, Customer.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		query.setFirstResult(offset);
+		query.setMaxResults(limit);
+		return query.getResultList();
 	}
-	
+
+	/*
+	 * the total number of records in a paginated search must have the same search
+	 * criteria as the paginated query (filter part)
+	 */
 	public Long paginatecount(String customernumber, String name) {
-		return dao.paginatecount(customernumber, name);
+
+		String where_and = " where ";
+		String sql = "select count(u.id)  from Customer u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (customernumber.length() > 0) {
+			sql += where_and;
+
+			if (customernumber.indexOf("%") < 0) {
+				sql += " u.customernumber = :customernumber";
+			} else {
+				sql += " u.customernumber like :customernumber";
+			}
+			params.put("customernumber", customernumber);
+			where_and = " and ";
+		}
+
+		if (name.length() > 0) {
+			sql += where_and;
+
+			if (name.indexOf("%") < 0) {
+				sql += " u.name = :name";
+			} else {
+				sql += " u.name like :name";
+			}
+			params.put("name", name);
+			where_and = " and ";
+		}
+
+		TypedQuery<Long> query = em.createQuery(sql, Long.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		Long rs = query.getSingleResult();
+
+		return rs;
 	}
 
 	public List<Long> getAllCustomerIds() {
-		return dao.getAllCustomerIds();
+		Query query = em.createQuery("SELECT c.id FROM Customer c");
+		@SuppressWarnings("unchecked")
+		List<Long> ids = query.getResultList();
+		return ids;
 	}
 
 	public int deleteAll() {
-		return dao.deleteAll();
+		Query query = em.createQuery("DELETE FROM Customer");
+		return query.executeUpdate();
 	}
 
 	public List<SearchData> prompt(String customernumber, String name) {
-		return dao.prompt(customernumber, name);
-	}
 
+		String where_and = " where ";
+		String sql = "select u  from Customer u ";
+		Map<String, Object> params = new HashMap<>();
+
+		if (customernumber.length() > 0) {
+			sql += where_and;
+
+			if (customernumber.indexOf("%") < 0) {
+				sql += " u.customernumber = :customernumber";
+			} else {
+				sql += " u.customernumber like :customernumber";
+			}
+			params.put("customernumber", customernumber);
+			where_and = " and ";
+		}
+
+		if (name.length() > 0) {
+			sql += where_and;
+
+			if (name.indexOf("%") < 0) {
+				sql += " u.name = :name";
+			} else {
+				sql += " u.name like :name";
+			}
+			params.put("name", name);
+			where_and = " and ";
+		}
+
+		sql += " order by u.customernumber, u.name";
+
+		TypedQuery<Customer> query = em.createQuery(sql, Customer.class);
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		List<Customer> tmpList = query.getResultList();
+		List<SearchData> ret = new ArrayList<>();
+		tmpList.forEach(cuno -> {
+			ret.add(new SearchData(cuno.getCustomernumber(), cuno.getName()));
+		});
+		tmpList.clear();
+		return ret;
+	}
 
 }
