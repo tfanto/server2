@@ -30,6 +30,24 @@ public class ItemService {
 		if (item == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity is null. Nothing to persist");
 		}
+		
+		if(item.getInstock() == null ) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Instock cannot be null");			
+		}
+		
+		if(item.getPrice() == null || item.getPrice() <= 0.0) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Price cannot be 0");			
+		}
+		
+		if(item.getPurchaseprice() == null || item.getPurchaseprice() <= 0.0) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Purchaseprice cannot be 0");			
+		}
+		
+		if(item.getOrderingpoint() == null || item.getOrderingpoint() <= 0) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Orderingpoint cannot be 0");			
+		}
+
+		
 		em.persist(item);
 		return item;
 	}
@@ -41,6 +59,24 @@ public class ItemService {
 		if (item.getId() == null) {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
+		
+		if(item.getInstock() == null ) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Instock cannot be null");			
+		}
+		
+		if(item.getPrice() == null || item.getPrice() <= 0.0) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Price cannot be 0");			
+		}
+		
+		if(item.getPurchaseprice() == null || item.getPurchaseprice() <= 0.0) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Purchaseprice cannot be 0");			
+		}
+		
+		if(item.getOrderingpoint() == null || item.getOrderingpoint() <= 0) {
+			throw new AppException(HTTP_PRECONDITION_FAILED, "Orderingpoint cannot be 0");			
+		}
+		
+		
 		return em.merge(item);
 	}
 
