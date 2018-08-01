@@ -17,6 +17,7 @@ import com.fnt.dto.SearchData;
 import com.fnt.entity.Item;
 import com.fnt.entity.ItemView1;
 import com.fnt.sys.AppException;
+import com.fnt.sys.SqlFilter;
 
 @Stateless
 public class ItemService {
@@ -130,6 +131,41 @@ public class ItemService {
 		List<ItemView1> rs = query.getResultList();
 		return rs;
 	}
+	
+	
+	private SqlFilter createSelectClauseForPagination(String sqlFirstPart, String itemnumber, String description) {
+		
+		SqlFilter filter = new SqlFilter();
+		
+		String where_and = " where ";
+		String sql = sqlFirstPart;
+		
+		if (itemnumber.length() > 0) {
+			sql += where_and;
+
+			if (itemnumber.indexOf("%") < 0) {
+				sql += " u.itemnumber = :itemnumber";
+			} else {
+				sql += " u.itemnumber like :itemnumber";
+			}
+			filter.params.put("itemnumber", itemnumber);
+			where_and = " and ";
+		}
+		if (description.length() > 0) {
+			sql += where_and;
+
+			if (description.indexOf("%") < 0) {
+				sql += " u.description = :description";
+			} else {
+				sql += " u.description like :description";
+			}
+			filter.params.put("description", description);
+			where_and = " and ";
+		}
+		
+		filter.sql = sql;
+		return filter;
+	}
 
 	public List<Item> paginatesearch(Integer offset, Integer limit, String itemnumber, String description, String sortorder) {
 
@@ -140,82 +176,24 @@ public class ItemService {
 			sortorder = sortorder.replaceAll(",", ",u.");
 			sort = " order by " + sortorder;
 		}
-
-		String where_and = " where ";
-		String sql = "select u  from Item u ";
-		Map<String, Object> params = new HashMap<>();
-
-		if (itemnumber.length() > 0) {
-			sql += where_and;
-
-			if (itemnumber.indexOf("%") < 0) {
-				sql += " u.itemnumber = :itemnumber";
-			} else {
-				sql += " u.itemnumber like :itemnumber";
-			}
-			params.put("itemnumber", itemnumber);
-			where_and = " and ";
-		}
-		if (description.length() > 0) {
-			sql += where_and;
-
-			if (description.indexOf("%") < 0) {
-				sql += " u.description = :description";
-			} else {
-				sql += " u.description like :description";
-			}
-			params.put("description", description);
-			where_and = " and ";
-		}
-
+		SqlFilter sqlFilter = createSelectClauseForPagination("select u  from Item u ", itemnumber, description);
+		String sql = sqlFilter.sql;
 		sql += sort;
 		TypedQuery<Item> query = em.createQuery(sql, Item.class);
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
-
 		query.setFirstResult(offset);
 		query.setMaxResults(limit);
 		List<Item> rs = query.getResultList();
 		return rs;
-
 	}
 
-	/*
-	 * the total number of records in a paginated search must have the same search
-	 * criteria as the paginated query (filter part)
-	 */
 	public Long paginatecount(String itemnumber, String description) {
 
-		String where_and = " where ";
-		String sql = "select count(u.id)  from Item u ";
-		Map<String, Object> params = new HashMap<>();
-
-		if (itemnumber.length() > 0) {
-			sql += where_and;
-
-			if (itemnumber.indexOf("%") < 0) {
-				sql += " u.itemnumber = :itemnumber";
-			} else {
-				sql += " u.itemnumber like :itemnumber";
-			}
-			params.put("itemnumber", itemnumber);
-			where_and = " and ";
-		}
-		if (description.length() > 0) {
-			sql += where_and;
-
-			if (description.indexOf("%") < 0) {
-				sql += " u.description = :description";
-			} else {
-				sql += " u.description like :description";
-			}
-			params.put("description", description);
-			where_and = " and ";
-		}
-
-		TypedQuery<Long> query = em.createQuery(sql, Long.class);
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
+		SqlFilter sqlFilter = createSelectClauseForPagination("select count(u.id)  from Item u ", itemnumber, description);
+		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 		Long rs = query.getSingleResult();
