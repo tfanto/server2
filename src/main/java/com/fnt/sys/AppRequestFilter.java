@@ -2,7 +2,6 @@ package com.fnt.sys;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,51 +36,60 @@ public class AppRequestFilter implements ContainerRequestFilter {
 
 	@Context
 	UriInfo uriInfo;
-	/*
-	 * @Override public void filter(ContainerRequestContext requestContext) throws
-	 * IOException {
-	 * 
-	 * 
-	 * String jweString = requestContext.getHeaderString("Authorization"); if
-	 * (jweString == null) {
-	 * requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
-	 * return; } Map<String, Object> payload = null; try { payload =
-	 * decrypt(jweString); } catch (Throwable t) {
-	 * requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
-	 * return; } if (payload == null) {
-	 * requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
-	 * return; } if (!payload.containsKey("user")) {
-	 * requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
-	 * return; } if (!payload.containsKey("roles")) {
-	 * requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
-	 * return; }
-	 * 
-	 * // transaction tracking every request must be trackable
-	 * MDC.put(TRANSACTION_ID, UUID.randomUUID().toString());
-	 * 
-	 * AppUserContext user = new AppUserContext(payload); AppSecurityContext
-	 * securityContext = new AppSecurityContext(uriInfo, user);
-	 * requestContext.setSecurityContext(securityContext); }
-	 */
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 
+		String jweString = requestContext.getHeaderString("Authorization");
+		if (jweString == null) {
+			throw new AppException(403, "Forbidden");
+			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+		}
+		Map<String, Object> payload = null;
+		try {
+			payload = decrypt(jweString);
+		} catch (Throwable t) {
+			throw new AppException(403, "Forbidden");
+			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+		}
+		if (payload == null) {
+			throw new AppException(403, "Forbidden");
+			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+		}
+		if (!payload.containsKey("user")) {
+			throw new AppException(403, "Forbidden");
+			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+		}
+		if (!payload.containsKey("roles")) {
+			throw new AppException(403, "Forbidden");
+			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+		}
+
 		// transaction tracking every request must be trackable
 		MDC.put(TRANSACTION_ID, UUID.randomUUID().toString());
-
-		Map<String, Object> payload = new HashMap<>();
-		payload.put("name", "testuser");
-		payload.put("roles", "ADMIN,USER,GUEST");
 
 		AppUserContext user = new AppUserContext(payload);
 		AppSecurityContext securityContext = new AppSecurityContext(uriInfo, user);
 		requestContext.setSecurityContext(securityContext);
 	}
 
+	/*
+	 * @Override public void filter(ContainerRequestContext requestContext) throws
+	 * IOException {
+	 * 
+	 * // transaction tracking every request must be trackable
+	 * MDC.put(TRANSACTION_ID, UUID.randomUUID().toString());
+	 * 
+	 * Map<String, Object> payload = new HashMap<>(); payload.put("name",
+	 * "testuser"); payload.put("roles", "ADMIN,USER,GUEST");
+	 * 
+	 * AppUserContext user = new AppUserContext(payload); AppSecurityContext
+	 * securityContext = new AppSecurityContext(uriInfo, user);
+	 * requestContext.setSecurityContext(securityContext); }
+	 */
+
 	@SuppressWarnings("unused")
-	private Map<String, Object> decrypt(String jweString)
-			throws ParseException, JOSEException, JsonParseException, JsonMappingException, IOException {
+	private Map<String, Object> decrypt(String jweString) throws ParseException, JOSEException, JsonParseException, JsonMappingException, IOException {
 
 		JWEObject jweObject = JWEObject.parse(jweString);
 
