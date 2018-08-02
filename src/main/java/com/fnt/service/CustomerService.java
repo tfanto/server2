@@ -77,13 +77,13 @@ public class CustomerService {
 			return null;
 		}
 	}
-	
+
 	private SqlFilter createFilterpartForPagination(String sqlFirstPart, String customernumber, String name) {
-		
-		SqlFilter filter = new SqlFilter();		
+
+		SqlFilter filter = new SqlFilter();
 		String where_and = " where ";
 		String sql = sqlFirstPart;
-		
+
 		if (customernumber.length() > 0) {
 			sql += where_and;
 
@@ -137,7 +137,7 @@ public class CustomerService {
 	 * criteria as the paginated query (filter part)
 	 */
 	public Long paginatecount(String customernumber, String name) {
-		
+
 		SqlFilter sqlFilter = createFilterpartForPagination("select count(u.id)  from Customer u ", customernumber, name);
 		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
 		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
