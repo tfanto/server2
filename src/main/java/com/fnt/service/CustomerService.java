@@ -109,7 +109,6 @@ public class CustomerService {
 		}
 		filter.sql = sql;
 		return filter;
-
 	}
 
 	public List<Customer> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String sortorder) {

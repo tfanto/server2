@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,6 +27,7 @@ import com.fnt.entity.CustomerOrderLinePK;
 import com.fnt.entity.Item;
 import com.fnt.message.AppJMSMessageProducer;
 import com.fnt.sys.AppException;
+import com.fnt.sys.SqlFilter;
 
 @Stateless
 public class CustomerOrderService {
@@ -229,8 +229,8 @@ public class CustomerOrderService {
 	public void deleteOrderLine(Integer orderNumber, Integer orderLineNumber) {
 
 	}
-
-	public List<CustomerOrderHeadListView> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String orderdateStr, String orderstatus, String changedby, String sortorder) {
+	
+	private SqlFilter createFilterpartForPagination(String sqlFirstPart, String customernumber, String name, String orderdateStr, String orderstatus, String changedby) {
 
 		LocalDate dateTime = null;
 		if (orderdateStr.length() > 0) {
@@ -238,29 +238,11 @@ public class CustomerOrderService {
 			dateTime = LocalDate.parse(orderdateStr, formatter);
 		}
 
-		// @formatter:off
 		
-		String sql = 
-				
-		"select customer_order_head.ordernumber as id, "  +
-	    "   customer.customernumber as customernumber, " +
-	    "   customer.name as name,  " +
-	    "   customer_order_head.date as orderdate , "  +
-	    "   customer_order_head.changedby as changedby, " + 
-	    "   customer_order_head.status as orderstatus " +
-	    "  from customer_order_head  " + 
-        "  join customer  " +
-        "     on customer.id = customer_order_head.customerid ";
-  		
-		// @formatter:on
-
+		SqlFilter filter = new SqlFilter();		
 		String where_and = " where ";
-		Map<String, Object> params = new HashMap<>();
-		String sort = "";
-		if (sortorder.length() > 0) {
-			sortorder = sortorder.toLowerCase();
-			sort = " order by " + sortorder;
-		}
+		String sql = sqlFirstPart;
+		
 
 		if (customernumber.length() > 0) {
 			sql += where_and;
@@ -269,7 +251,7 @@ public class CustomerOrderService {
 			} else {
 				sql += " customernumber like :customernumber";
 			}
-			params.put("customernumber", customernumber);
+			filter.params.put("customernumber", customernumber);
 			where_and = " and ";
 		}
 
@@ -280,14 +262,14 @@ public class CustomerOrderService {
 			} else {
 				sql += " name like :name";
 			}
-			params.put("name", name);
+			filter.params.put("name", name);
 			where_and = " and ";
 		}
 
 		if (dateTime != null) {
 			sql += where_and;
 			sql += " customer_order_head.date  >= :orderdate";
-			params.put("orderdate", dateTime);
+			filter.params.put("orderdate", dateTime);
 			where_and = " and ";
 		}
 
@@ -298,7 +280,7 @@ public class CustomerOrderService {
 			} else {
 				sql += " cast(customer_order_head.status as character varying(3)) like :orderstatus";
 			}
-			params.put("orderstatus", orderstatus);
+			filter.params.put("orderstatus", orderstatus);
 			where_and = " and ";
 		}
 
@@ -309,18 +291,43 @@ public class CustomerOrderService {
 			} else {
 				sql += " changedby like :changedby";
 			}
-			params.put("changedby", changedby);
+			filter.params.put("changedby", changedby);
 			where_and = " and ";
 		}
+		filter.sql = sql;
+		return filter;
+	}
 
+	public List<CustomerOrderHeadListView> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String orderdateStr, String orderstatus, String changedby, String sortorder) {
+
+		
+		String sort = "";
+		if (sortorder.length() > 0) {
+			sortorder = sortorder.toLowerCase();
+			sort = " order by " + sortorder;
+		}
+	
+		// @formatter:off		
+		String sqlFirstpart = 				
+		"select customer_order_head.ordernumber as id, "  +
+	    "   customer.customernumber as customernumber, " +
+	    "   customer.name as name,  " +
+	    "   customer_order_head.date as orderdate , "  +
+	    "   customer_order_head.changedby as changedby, " + 
+	    "   customer_order_head.status as orderstatus " +
+	    "  from customer_order_head  " + 
+        "  join customer  " +
+        "     on customer.id = customer_order_head.customerid ";  		
+		// @formatter:on
+		
+		SqlFilter sqlFilter = createFilterpartForPagination(sqlFirstpart, customernumber, name,orderdateStr,orderstatus,changedby);
+		String sql = sqlFilter.sql;
 		sql += sort;
 
 		Query query = em.createNativeQuery(sql);
-
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
-
 		List<CustomerOrderHeadListView> resultSet = new ArrayList<>();
 		query.setFirstResult(offset);
 		query.setMaxResults(limit);
@@ -335,84 +342,20 @@ public class CustomerOrderService {
 
 	public Long paginatecount(String customernumber, String name, String orderdateStr, String orderstatus, String changedby) {
 
-		LocalDate dateTime = null;
-		if (orderdateStr.length() > 0) {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			dateTime = LocalDate.parse(orderdateStr, formatter);
-		}
-
-		// @formatter:off
-		
-		String sql = 
-				
+		// @formatter:off		
+		String sqlFirstpart = 				
 		"select count(customer.id) "  +
 	    "  from customer_order_head  " + 
         "  join customer  " +
-        "     on customer.id = customer_order_head.customerid ";
-  		
+        "     on customer.id = customer_order_head.customerid ";  		
 		// @formatter:on
-
-		String where_and = " where ";
-		Map<String, Object> params = new HashMap<>();
-
-		if (customernumber.length() > 0) {
-			sql += where_and;
-			if (customernumber.indexOf("%") < 0) {
-				sql += " customer.customernumber = :customernumber";
-			} else {
-				sql += " customer.customernumber like :customernumber";
-			}
-			params.put("customernumber", customernumber);
-			where_and = " and ";
-		}
-
-		if (name.length() > 0) {
-			sql += where_and;
-			if (name.indexOf("%") < 0) {
-				sql += " customer.name = :name";
-			} else {
-				sql += " customer.name like :name";
-			}
-			params.put("name", name);
-			where_and = " and ";
-		}
-
-		if (dateTime != null) {
-			sql += where_and;
-			sql += " customer_order_head.date  >= :orderdate";
-			params.put("orderdate", dateTime);
-			where_and = " and ";
-		}
-
-		if (orderstatus.length() > 0) {
-			sql += where_and;
-			if (orderstatus.indexOf("%") < 0) {
-				sql += " cast(customer_order_head.status as character varying(3)) = :orderstatus";
-			} else {
-				sql += " cast(customer_order_head.status as character varying(3)) like :orderstatus";
-			}
-			params.put("orderstatus", orderstatus);
-			where_and = " and ";
-		}
-
-		if (changedby.length() > 0) {
-			sql += where_and;
-			if (changedby.indexOf("%") < 0) {
-				sql += " customer_order_head.changedby = :changedby";
-			} else {
-				sql += " customer_order_head.changedby like :changedby";
-			}
-			params.put("changedby", changedby);
-			where_and = " and ";
-		}
-
+		SqlFilter sqlFilter = createFilterpartForPagination(sqlFirstpart, customernumber, name,orderdateStr,orderstatus,changedby);
+		String sql = sqlFilter.sql;
+		
 		Query query = em.createNativeQuery(sql);
-
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
-
-		// ugly but ok its a biginteger
 		Object rs = query.getSingleResult();
 		BigInteger records = (BigInteger) rs;
 		return records.longValue();
