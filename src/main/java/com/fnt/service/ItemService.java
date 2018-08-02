@@ -160,8 +160,7 @@ public class ItemService {
 			}
 			filter.params.put("description", description);
 			where_and = " and ";
-		}
-		
+		}		
 		filter.sql = sql;
 		return filter;
 	}
