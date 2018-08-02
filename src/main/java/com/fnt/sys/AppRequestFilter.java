@@ -1,7 +1,10 @@
 package com.fnt.sys;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,6 +15,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
@@ -68,9 +72,41 @@ public class AppRequestFilter implements ContainerRequestFilter {
 		// transaction tracking every request must be trackable
 		MDC.put(TRANSACTION_ID, UUID.randomUUID().toString());
 
-		AppUserContext user = new AppUserContext(payload);
-		AppSecurityContext securityContext = new AppSecurityContext(uriInfo, user);
-		requestContext.setSecurityContext(securityContext);
+		// AppUserContext user = new AppUserContext(payload);
+		// AppSecurityContext securityContext = new AppSecurityContext(uriInfo, user);
+		// requestContext.setSecurityContext(securityContext);
+
+		String user = String.valueOf(payload.get("user"));
+		String rolesStr = String.valueOf(payload.get("roles"));
+
+		requestContext.setSecurityContext(new SecurityContext() {
+			@Override
+			public Principal getUserPrincipal() {
+				return new Principal() {
+					@Override
+					public String getName() {
+						return user;
+					}
+				};
+			}
+
+			@Override
+			public boolean isUserInRole(String role) {
+				List<String> roles = Arrays.asList(rolesStr.split(","));
+				return roles.contains(role);
+			}
+
+			@Override
+			public boolean isSecure() {
+				return uriInfo.getAbsolutePath().toString().startsWith("https");
+			}
+
+			@Override
+			public String getAuthenticationScheme() {
+				return "Token-Based-Auth-Scheme";
+			}
+
+		});
 	}
 
 	/*
