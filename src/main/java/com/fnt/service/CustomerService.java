@@ -16,6 +16,7 @@ import javax.persistence.TypedQuery;
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
 import com.fnt.sys.AppException;
+import com.fnt.sys.SqlFilter;
 
 @Stateless
 public class CustomerService {
@@ -76,21 +77,13 @@ public class CustomerService {
 			return null;
 		}
 	}
-
-	public List<Customer> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String sortorder) {
-
-		String sort = "";
-		if (sortorder.length() > 0) {
-			sortorder = sortorder.toLowerCase();
-			sortorder = "u." + sortorder;
-			sortorder = sortorder.replaceAll(",", ",u.");
-			sort = " order by " + sortorder;
-		}
-
+	
+	private SqlFilter createFilterpartForPagination(String sqlFirstPart, String customernumber, String name) {
+		
+		SqlFilter filter = new SqlFilter();		
 		String where_and = " where ";
-		String sql = "select u  from Customer u ";
-		Map<String, Object> params = new HashMap<>();
-
+		String sql = sqlFirstPart;
+		
 		if (customernumber.length() > 0) {
 			sql += where_and;
 
@@ -99,7 +92,7 @@ public class CustomerService {
 			} else {
 				sql += " u.customernumber like :customernumber";
 			}
-			params.put("customernumber", customernumber);
+			filter.params.put("customernumber", customernumber);
 			where_and = " and ";
 		}
 
@@ -111,14 +104,28 @@ public class CustomerService {
 			} else {
 				sql += " u.name like :name";
 			}
-			params.put("name", name);
+			filter.params.put("name", name);
 			where_and = " and ";
 		}
+		filter.sql = sql;
+		return filter;
 
+	}
+
+	public List<Customer> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String sortorder) {
+
+		String sort = "";
+		if (sortorder.length() > 0) {
+			sortorder = sortorder.toLowerCase();
+			sortorder = "u." + sortorder;
+			sortorder = sortorder.replaceAll(",", ",u.");
+			sort = " order by " + sortorder;
+		}
+		SqlFilter sqlFilter = createFilterpartForPagination("select u  from Customer u ", customernumber, name);
+		String sql = sqlFilter.sql;
 		sql += sort;
-
 		TypedQuery<Customer> query = em.createQuery(sql, Customer.class);
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 		query.setFirstResult(offset);
@@ -131,41 +138,13 @@ public class CustomerService {
 	 * criteria as the paginated query (filter part)
 	 */
 	public Long paginatecount(String customernumber, String name) {
-
-		String where_and = " where ";
-		String sql = "select count(u.id)  from Customer u ";
-		Map<String, Object> params = new HashMap<>();
-
-		if (customernumber.length() > 0) {
-			sql += where_and;
-
-			if (customernumber.indexOf("%") < 0) {
-				sql += " u.customernumber = :customernumber";
-			} else {
-				sql += " u.customernumber like :customernumber";
-			}
-			params.put("customernumber", customernumber);
-			where_and = " and ";
-		}
-
-		if (name.length() > 0) {
-			sql += where_and;
-
-			if (name.indexOf("%") < 0) {
-				sql += " u.name = :name";
-			} else {
-				sql += " u.name like :name";
-			}
-			params.put("name", name);
-			where_and = " and ";
-		}
-
-		TypedQuery<Long> query = em.createQuery(sql, Long.class);
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
+		
+		SqlFilter sqlFilter = createFilterpartForPagination("select count(u.id)  from Customer u ", customernumber, name);
+		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 		Long rs = query.getSingleResult();
-
 		return rs;
 	}
 

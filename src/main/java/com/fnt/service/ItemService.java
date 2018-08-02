@@ -133,10 +133,9 @@ public class ItemService {
 	}
 	
 	
-	private SqlFilter createSelectClauseForPagination(String sqlFirstPart, String itemnumber, String description) {
+	private SqlFilter createFilterpartForPagination(String sqlFirstPart, String itemnumber, String description) {
 		
-		SqlFilter filter = new SqlFilter();
-		
+		SqlFilter filter = new SqlFilter();		
 		String where_and = " where ";
 		String sql = sqlFirstPart;
 		
@@ -176,7 +175,7 @@ public class ItemService {
 			sortorder = sortorder.replaceAll(",", ",u.");
 			sort = " order by " + sortorder;
 		}
-		SqlFilter sqlFilter = createSelectClauseForPagination("select u  from Item u ", itemnumber, description);
+		SqlFilter sqlFilter = createFilterpartForPagination("select u  from Item u ", itemnumber, description);
 		String sql = sqlFilter.sql;
 		sql += sort;
 		TypedQuery<Item> query = em.createQuery(sql, Item.class);
@@ -189,9 +188,13 @@ public class ItemService {
 		return rs;
 	}
 
+	/*
+	 * the total number of records in a paginated search must have the same search
+	 * criteria as the paginated query (filter part)
+	 */
 	public Long paginatecount(String itemnumber, String description) {
 
-		SqlFilter sqlFilter = createSelectClauseForPagination("select count(u.id)  from Item u ", itemnumber, description);
+		SqlFilter sqlFilter = createFilterpartForPagination("select count(u.id)  from Item u ", itemnumber, description);
 		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
 		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
