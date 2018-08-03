@@ -15,8 +15,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
@@ -27,12 +29,17 @@ public class CustomerResource {
 
 	@Inject
 	private CustomerService service;
+	
+	@Context private SecurityContext sc;
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	public Response create(Customer customer) {
+		
+		String userName = sc.getUserPrincipal().getName();
+		customer.setChangedby(userName);
 		Customer created = service.create(customer);
 		return Response.ok(created).build();
 	}
@@ -43,6 +50,8 @@ public class CustomerResource {
 	@RolesAllowed({ "ADMIN", "USER" })
 	public Response update(Customer customer) {
 		Customer updated = service.update(customer);
+		String userName = sc.getUserPrincipal().getName();
+		customer.setChangedby(userName);
 		return Response.ok(updated).build();
 	}
 
@@ -116,9 +125,7 @@ public class CustomerResource {
 		Decoder decoder = Base64.getDecoder();
 		String customernumber = new String(decoder.decode(cn));
 		String name = new String(decoder.decode(n));
-
 		List<SearchData> rs = service.prompt(customernumber, name);
-
 		return Response.ok(rs).build();
 	}
 
