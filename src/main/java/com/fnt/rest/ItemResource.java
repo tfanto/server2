@@ -15,8 +15,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Item;
@@ -28,12 +30,16 @@ public class ItemResource {
 
 	@Inject
 	private ItemService service;
+	
+	@Context private SecurityContext sc;
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	public Response create(Item item) {
+		String userName = sc.getUserPrincipal().getName();
+		item.setChangedby(userName);
 		Item created = service.create(item);
 		return Response.ok(created).build();
 	}
@@ -43,6 +49,8 @@ public class ItemResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	public Response update(Item item) {
+		String userName = sc.getUserPrincipal().getName();
+		item.setChangedby(userName);
 		Item updated = service.update(item);
 		return Response.ok(updated).build();
 	}

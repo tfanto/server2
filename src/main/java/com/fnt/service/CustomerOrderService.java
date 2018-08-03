@@ -67,7 +67,7 @@ public class CustomerOrderService {
 			head.setDate(LocalDate.now());
 		}
 		// todo get this from logged on user
-		head.setChangedby("SYS");
+		head.setChangedby("BATCH");
 
 		String internalordernumber = UUID.randomUUID().toString();
 
@@ -108,7 +108,7 @@ public class CustomerOrderService {
 				if (line.getDate() == null) {
 					line.setDate(head.getDate());
 				}
-				createLine(internalordernumber, lineNumber, fetchedItem.getItemnumber(), line.getNumberofitems(), fetchedItem.getPrice(), "SYS");
+				createLine(internalordernumber, lineNumber, fetchedItem.getItemnumber(), line.getNumberofitems(), fetchedItem.getPrice(), head.getChangedby());
 			}
 		}
 	}
@@ -215,6 +215,7 @@ public class CustomerOrderService {
 		customerOrderLine.setItemid(fetchedItem.getId());
 		customerOrderLine.setNumberofitems(numberofitems);
 		customerOrderLine.setPriceperitem(priceperitem);
+		customerOrderLine.setChangedby(changedby);
 		em.persist(customerOrderLine);
 		return customerOrderLine;
 	}

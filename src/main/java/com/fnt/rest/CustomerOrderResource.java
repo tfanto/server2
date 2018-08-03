@@ -14,8 +14,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +36,9 @@ public class CustomerOrderResource {
 
 	@Inject
 	private CustomerOrderService service;
+	
+	@Context private SecurityContext sc;
+
 
 	public CustomerOrderResource() {
 		MAPPER = new ObjectMapper();
@@ -60,8 +65,8 @@ public class CustomerOrderResource {
 		Decoder decoder = Base64.getUrlDecoder();
 		String customernumber = new String(decoder.decode(customernumberStr));
 		String date = new String(decoder.decode(dateStr));
-
-		CustomerOrderHead obj = service.createHeader(customernumber, date, "SYS");
+		String userName = sc.getUserPrincipal().getName();
+		CustomerOrderHead obj = service.createHeader(customernumber, date, userName);
 		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
 	}
@@ -81,9 +86,8 @@ public class CustomerOrderResource {
 		String priceperitemDecoded = new String(decoder.decode(priceperitemStr));
 		Integer units = Integer.parseInt(unitsDecoded);
 		Double priceperitem = Double.parseDouble(priceperitemDecoded);
-		
-
-		CustomerOrderLine obj = service.createLine(internalordernumber, itemnumber, units, priceperitem, "SYS");
+		String userName = sc.getUserPrincipal().getName();
+		CustomerOrderLine obj = service.createLine(internalordernumber, itemnumber, units, priceperitem, userName);
 		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
 	}
@@ -113,8 +117,8 @@ public class CustomerOrderResource {
 		String customernumber = new String(decoder.decode(customernumberStr));
 		String date = new String(decoder.decode(dateStr));
 		Long ordernumber = Long.parseLong(ordernumberStr);
-
-		CustomerOrderHead obj = service.updateHeader(ordernumber, customernumber, date, "SYS");
+		String userName = sc.getUserPrincipal().getName();
+		CustomerOrderHead obj = service.updateHeader(ordernumber, customernumber, date, userName);
 		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
 	}
