@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -36,9 +37,9 @@ public class CustomerOrderResource {
 
 	@Inject
 	private CustomerOrderService service;
-	
-	@Context private SecurityContext sc;
 
+	@Context
+	private SecurityContext sc;
 
 	public CustomerOrderResource() {
 		MAPPER = new ObjectMapper();
@@ -126,7 +127,7 @@ public class CustomerOrderResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER"})
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "paginatesearch")
 	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr,
 			@QueryParam("orderstatus") String orderstatusStr, @QueryParam("changedby") String changedbyStr, @QueryParam("sortorder") String sortorderStr) throws JsonProcessingException {
@@ -146,14 +147,14 @@ public class CustomerOrderResource {
 		String json = MAPPER.writeValueAsString(list);
 		return Response.ok(json).build();
 	}
-	
+
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "paginatecount")
-	public Response paginatecount(@QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr,
-			@QueryParam("orderstatus") String orderstatusStr, @QueryParam("changedby") String changedbyStr) throws JsonProcessingException {
+	public Response paginatecount(@QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr, @QueryParam("orderstatus") String orderstatusStr,
+			@QueryParam("changedby") String changedbyStr) throws JsonProcessingException {
 
 		Decoder decoder = Base64.getUrlDecoder();
 		String customernumber = new String(decoder.decode(customernumberStr));
@@ -165,7 +166,6 @@ public class CustomerOrderResource {
 		return Response.ok(items).build();
 	}
 
-
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -176,6 +176,19 @@ public class CustomerOrderResource {
 		CustomerOrderHead obj = service.getById(ordernumber);
 		String json = MAPPER.writeValueAsString(obj);
 		return Response.ok(json).build();
+	}
+
+	@DELETE
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER" })
+	@Path(value = "{internalordernumber}")
+	public Response deleteOrder(@PathParam("internalordernumber") String internalordernumberStr) throws JsonProcessingException {
+
+		Decoder decoder = Base64.getUrlDecoder();
+		String internalordernumber = new String(decoder.decode(internalordernumberStr));
+		service.delete(internalordernumber);
+		return Response.ok().build();
 	}
 
 }

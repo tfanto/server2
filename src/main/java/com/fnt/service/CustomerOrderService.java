@@ -423,4 +423,28 @@ public class CustomerOrderService {
 		return resultSet;
 	}
 
+	/* 1 get all lines
+	 * 2 for every line increase saldo in item with lines noOfItems
+	 * 3 remove the line
+	 * 
+	 * 4 when ready delete the header
+	 * 
+	 */
+	public void delete(String internalordernumber) {
+		
+		List<CustomerOrderLineListView> lines = getLinesForOrder(internalordernumber);
+		for(CustomerOrderLineListView line : lines) {			
+			Long lineNumber = line.getLinennumber();
+			CustomerOrderLinePK primaryKey = new CustomerOrderLinePK();
+			primaryKey.setInternalordernumber(internalordernumber);
+			primaryKey.setLineNumber(lineNumber);
+			CustomerOrderLine theLine = new CustomerOrderLine();
+			theLine.setPrimarykey(primaryKey);
+			em.remove(em.contains(theLine) ? theLine : em.merge(theLine));
+		}
+		Query qry = em.createNamedQuery(CustomerOrderHead.CUSTOMER_ORDERHEAD_DELETE_BY_INTERNAL_ORDERNUMBER);
+		qry.setParameter("internalordernumber", internalordernumber);		
+		qry.executeUpdate();
+	}
+
 }
