@@ -126,7 +126,7 @@ public class CustomerOrderResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER"})
 	@Path(value = "paginatesearch")
 	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr,
 			@QueryParam("orderstatus") String orderstatusStr, @QueryParam("changedby") String changedbyStr, @QueryParam("sortorder") String sortorderStr) throws JsonProcessingException {
@@ -150,7 +150,7 @@ public class CustomerOrderResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "paginatecount")
 	public Response paginatecount(@QueryParam("customernumber") String customernumberStr, @QueryParam("name") String nameStr, @QueryParam("date") String dateStr,
 			@QueryParam("orderstatus") String orderstatusStr, @QueryParam("changedby") String changedbyStr) throws JsonProcessingException {
@@ -169,7 +169,7 @@ public class CustomerOrderResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "{ordernumber}")
 	public Response getById(@PathParam("ordernumber") String ordernumberStr) throws JsonProcessingException {
 		Long ordernumber = Long.parseLong(ordernumberStr);
