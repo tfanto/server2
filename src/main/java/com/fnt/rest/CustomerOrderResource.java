@@ -183,12 +183,29 @@ public class CustomerOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "{internalordernumber}")
-	public Response deleteOrder(@PathParam("internalordernumber") String internalordernumberStr) throws JsonProcessingException {
+	public Response deleteCustomerOrder(@PathParam("internalordernumber") String internalordernumberStr) throws JsonProcessingException {
 
 		Decoder decoder = Base64.getUrlDecoder();
 		String internalordernumber = new String(decoder.decode(internalordernumberStr));
 		service.delete(internalordernumber);
 		return Response.ok().build();
 	}
+	
+	@DELETE
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER" })
+	@Path(value = "{internalordernumber}/{linenumber}/{itemnumber}")
+	public Response deleteCustomerOrderLine(@PathParam("internalordernumber") String internalordernumberStr,@PathParam("linenumber") String linenumberStr,@PathParam("itemnumber") String itemnumberStr) throws JsonProcessingException {
+
+		Decoder decoder = Base64.getUrlDecoder();
+		String internalordernumber = new String(decoder.decode(internalordernumberStr));
+		String ln = new String(decoder.decode(linenumberStr));
+		Long linenumber = Long.parseLong(ln);
+		String itemnumber = new String(decoder.decode(itemnumberStr));
+		service.deleteCustomerOrderLine(internalordernumber, linenumber, itemnumber);
+		return Response.ok().build();
+	}
+
 
 }

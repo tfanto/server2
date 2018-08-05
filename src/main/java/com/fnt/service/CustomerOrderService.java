@@ -203,7 +203,7 @@ public class CustomerOrderService {
 		if (fetchedItem == null) {
 			throw new AppException(412, "Item does not exist." + itemnumber);
 		}
-		
+
 		// todo dont forget to update lagersaldo
 
 		CustomerOrderLine customerOrderLine = new CustomerOrderLine();
@@ -223,17 +223,16 @@ public class CustomerOrderService {
 
 	// from interactive
 	public CustomerOrderLine createLine(String internalordernumber, String itemnumber, Integer numberofitems, Double priceperitem, String changedby) {
-		Long lineNumber = System.nanoTime(); // linenumber in timeorder  and with internalordernumber  is unique
+		Long lineNumber = System.nanoTime(); // linenumber in timeorder and with internalordernumber is unique
 		return createLine(internalordernumber, lineNumber, itemnumber, numberofitems, priceperitem, changedby);
 	}
 
 	public void deleteOrderLine(Integer orderNumber, Integer orderLineNumber) {
-		
+
 		// todo dont forget to update lagersaldo
 
-
 	}
-	
+
 	private SqlFilter createFilterpartForPagination(String sqlFirstPart, String customernumber, String name, String orderdateStr, String orderstatus, String changedby) {
 
 		LocalDate dateTime = null;
@@ -242,11 +241,9 @@ public class CustomerOrderService {
 			dateTime = LocalDate.parse(orderdateStr, formatter);
 		}
 
-		
-		SqlFilter filter = new SqlFilter();		
+		SqlFilter filter = new SqlFilter();
 		String where_and = " where ";
 		String sql = sqlFirstPart;
-		
 
 		if (customernumber.length() > 0) {
 			sql += where_and;
@@ -304,13 +301,12 @@ public class CustomerOrderService {
 
 	public List<CustomerOrderHeadListView> paginatesearch(Integer offset, Integer limit, String customernumber, String name, String orderdateStr, String orderstatus, String changedby, String sortorder) {
 
-		
 		String sort = "";
 		if (sortorder.length() > 0) {
 			sortorder = sortorder.toLowerCase();
 			sort = " order by " + sortorder;
 		}
-	
+
 		// @formatter:off		
 		String sqlFirstpart = 				
 		"select customer_order_head.ordernumber as id, "  +
@@ -323,8 +319,8 @@ public class CustomerOrderService {
         "  join customer  " +
         "     on customer.id = customer_order_head.customerid ";  		
 		// @formatter:on
-		
-		SqlFilter sqlFilter = createFilterpartForPagination(sqlFirstpart, customernumber, name,orderdateStr,orderstatus,changedby);
+
+		SqlFilter sqlFilter = createFilterpartForPagination(sqlFirstpart, customernumber, name, orderdateStr, orderstatus, changedby);
 		String sql = sqlFilter.sql;
 		sql += sort;
 
@@ -353,9 +349,9 @@ public class CustomerOrderService {
         "  join customer  " +
         "     on customer.id = customer_order_head.customerid ";  		
 		// @formatter:on
-		SqlFilter sqlFilter = createFilterpartForPagination(sqlFirstpart, customernumber, name,orderdateStr,orderstatus,changedby);
+		SqlFilter sqlFilter = createFilterpartForPagination(sqlFirstpart, customernumber, name, orderdateStr, orderstatus, changedby);
 		String sql = sqlFilter.sql;
-		
+
 		Query query = em.createNativeQuery(sql);
 		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
@@ -423,28 +419,43 @@ public class CustomerOrderService {
 		return resultSet;
 	}
 
-	/* 1 get all lines
-	 * 2 for every line increase saldo in item with lines noOfItems
+	/*
+	 * 1 get all lines 2 for every line increase saldo in item with lines noOfItems
 	 * 3 remove the line
 	 * 
 	 * 4 when ready delete the header
 	 * 
 	 */
 	public void delete(String internalordernumber) {
-		
+
 		List<CustomerOrderLineListView> lines = getLinesForOrder(internalordernumber);
-		for(CustomerOrderLineListView line : lines) {			
-			Long lineNumber = line.getLinennumber();
+		for (CustomerOrderLineListView line : lines) {
+			Long linenumber = line.getLinennumber();
 			CustomerOrderLinePK primaryKey = new CustomerOrderLinePK();
 			primaryKey.setInternalordernumber(internalordernumber);
-			primaryKey.setLineNumber(lineNumber);
+			primaryKey.setLineNumber(linenumber);
 			CustomerOrderLine theLine = new CustomerOrderLine();
 			theLine.setPrimarykey(primaryKey);
 			em.remove(em.contains(theLine) ? theLine : em.merge(theLine));
 		}
 		Query qry = em.createNamedQuery(CustomerOrderHead.CUSTOMER_ORDERHEAD_DELETE_BY_INTERNAL_ORDERNUMBER);
-		qry.setParameter("internalordernumber", internalordernumber);		
+		qry.setParameter("internalordernumber", internalordernumber);
 		qry.executeUpdate();
+	}
+
+	public void deleteCustomerOrderLine(String internalordernumber, Long linenumber, String itemnumber) {
+
+		CustomerOrderLinePK primaryKey = new CustomerOrderLinePK();
+		primaryKey.setInternalordernumber(internalordernumber);
+		primaryKey.setLineNumber(linenumber);
+		CustomerOrderLine theLine = new CustomerOrderLine();
+		theLine.setPrimarykey(primaryKey);
+
+		CustomerOrderLine fetched = em.find(CustomerOrderLine.class, primaryKey);
+		if (fetched != null) {
+			em.remove(fetched);
+		}
+
 	}
 
 }
