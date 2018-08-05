@@ -69,7 +69,7 @@ public class CustomerResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(value = "{id}")
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	public Response get(@PathParam("id") Long id) {
 		Customer fetched = service.get(id);
 		if (fetched == null) {
@@ -82,7 +82,7 @@ public class CustomerResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "paginatesearch")
 	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("customernumber") String customernumber, @QueryParam("name") String name, @QueryParam("sortorder") String sortorder) {
 
@@ -101,7 +101,7 @@ public class CustomerResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER"})
 	@Path("paginatecount")
 	public Response paginatecount(@QueryParam("customernumber") String customernumber, @QueryParam("name") String name) {
 
@@ -118,7 +118,7 @@ public class CustomerResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "prompt")
 	public Response prompt(@QueryParam("customernumber") String cn, @QueryParam("name") String n) {
 
@@ -132,7 +132,7 @@ public class CustomerResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("orderinginfo")
 	public Response getAllCustomerNumbers() {
 		List<Long> items = service.getAllCustomerIds();

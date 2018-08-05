@@ -196,7 +196,6 @@ public class CustomerOrderService {
 		query2.executeUpdate();
 	}
 
-	// from batch
 	public CustomerOrderLine createLine(String internalordernumber, Long linenumber, String itemnumber, Integer numberofitems, Double priceperitem, String changedby) {
 
 		// get item from db must have itemId
@@ -204,6 +203,8 @@ public class CustomerOrderService {
 		if (fetchedItem == null) {
 			throw new AppException(412, "Item does not exist." + itemnumber);
 		}
+		
+		// todo dont forget to update lagersaldo
 
 		CustomerOrderLine customerOrderLine = new CustomerOrderLine();
 		CustomerOrderLinePK primaryKey = new CustomerOrderLinePK();
@@ -222,12 +223,14 @@ public class CustomerOrderService {
 
 	// from interactive
 	public CustomerOrderLine createLine(String internalordernumber, String itemnumber, Integer numberofitems, Double priceperitem, String changedby) {
-
 		Long lineNumber = System.nanoTime(); // linenumber in timeorder  and with internalordernumber  is unique
 		return createLine(internalordernumber, lineNumber, itemnumber, numberofitems, priceperitem, changedby);
 	}
 
 	public void deleteOrderLine(Integer orderNumber, Integer orderLineNumber) {
+		
+		// todo dont forget to update lagersaldo
+
 
 	}
 	

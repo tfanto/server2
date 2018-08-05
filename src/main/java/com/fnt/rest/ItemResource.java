@@ -69,7 +69,7 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(value = "{id}")
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	public Response get(@PathParam("id") Long id) {
 		Item fetched = service.get(id);
 		if (fetched == null) {
@@ -82,7 +82,7 @@ public class ItemResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("paginatesearch")
 	public Response paginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description, @QueryParam("sortorder") String sortorder) {
 
@@ -101,7 +101,7 @@ public class ItemResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("paginatecount")
 	public Response paginatecount(@QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description) {
 
@@ -115,7 +115,7 @@ public class ItemResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "prompt")
 	public Response prompt(@QueryParam("itemnumber") String cn, @QueryParam("description") String n) {
 
@@ -129,7 +129,7 @@ public class ItemResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("itemnumbers")
 	public Response getAllItemNumbers() {
 		List<String> items = service.getAllItemIds();
@@ -139,7 +139,7 @@ public class ItemResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
+	@RolesAllowed({ "ADMIN", "USER" })
 	@Path("orderinginfo")
 	public Response getAllForOrdering() {
 		List<ItemView1> items = service.getAllForOrdering();
