@@ -30,8 +30,9 @@ public class ItemResource {
 
 	@Inject
 	private ItemService service;
-	
-	@Context private SecurityContext sc;
+
+	@Context
+	private SecurityContext sc;
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -116,14 +117,32 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
-	@Path(value = "prompt")
-	public Response prompt(@QueryParam("itemnumber") String cn, @QueryParam("description") String n) {
+	@Path("promptpaginatesearch")
+	public Response promptPaginatesearch(@QueryParam("offset") String offs, @QueryParam("limit") String lim, @QueryParam("itemnumber") String itemnumber, @QueryParam("description") String description) {
+
+		Decoder decoder = Base64.getDecoder();
+		String offsetStr = new String(decoder.decode(offs));
+		String limitStr = new String(decoder.decode(lim));
+		String itemnumberStr = new String(decoder.decode(itemnumber));
+		String descriptionStr = new String(decoder.decode(description));
+		Integer offset = Integer.parseInt(offsetStr);
+		Integer limit = Integer.parseInt(limitStr);
+		List<SearchData> items = service.PROMPTpaginatesearch(offset, limit, itemnumberStr, descriptionStr);
+		return Response.ok(items).build();
+	}
+
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed({ "ADMIN", "USER" })
+	@Path(value = "promptpaginatecount")
+	public Response promptPaginateCount(@QueryParam("itemnumber") String cn, @QueryParam("description") String n) {
 
 		Decoder decoder = Base64.getDecoder();
 		String itemnumber = new String(decoder.decode(cn));
 		String description = new String(decoder.decode(n));
-		List<SearchData> rs = service.prompt(itemnumber, description);
-		return Response.ok(rs).build();
+		Long recs = service.PROMPTpaginatecount(itemnumber, description);
+		return Response.ok(recs).build();
 	}
 
 	@GET

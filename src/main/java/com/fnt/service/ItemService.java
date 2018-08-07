@@ -202,11 +202,50 @@ public class ItemService {
 		return rs;
 	}
 
-	public List<SearchData> prompt(String itemnumber, String description) {
-		String where_and = " where ";
-		String sql = "select u  from Item u ";
-		Map<String, Object> params = new HashMap<>();
+	
+	public List<SearchData> PROMPTpaginatesearch(Integer offset, Integer limit, String itemnumber, String description) {
 
+		SqlFilter sqlFilter = PROMPTcreateFilterpartForPagination("select u  from Item u ", itemnumber, description);
+		String sql = sqlFilter.sql;
+		
+		sql += " order by u.itemnumber, u.description";
+		
+		TypedQuery<Item> query = em.createQuery(sql, Item.class);
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		query.setFirstResult(offset);
+		query.setMaxResults(limit);
+		List<Item> tmpList = query.getResultList();
+		List<SearchData> rs = new ArrayList<>();
+		tmpList.forEach(item -> {
+			rs.add(new SearchData(item.getItemnumber(), item.getDescription(), String.valueOf(item.getPrice())));
+		});
+		tmpList.clear();
+		return rs;
+	}
+
+	
+	
+	public Long PROMPTpaginatecount(String itemnumber, String description) {
+
+		SqlFilter sqlFilter = PROMPTcreateFilterpartForPagination("select count(u.id)  from Item u ", itemnumber, description);
+		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
+		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
+			query.setParameter(entry.getKey(), entry.getValue());
+		}
+		Long rs = query.getSingleResult();
+		return rs;
+	}
+
+	
+	
+	private SqlFilter PROMPTcreateFilterpartForPagination(String sqlFirstPart, String itemnumber, String description) {
+		
+		SqlFilter filter = new SqlFilter();		
+		String where_and = " where ";
+		String sql = sqlFirstPart;
+		
 		if (itemnumber.length() > 0) {
 			sql += where_and;
 
@@ -215,10 +254,9 @@ public class ItemService {
 			} else {
 				sql += " u.itemnumber like :itemnumber";
 			}
-			params.put("itemnumber", itemnumber);
+			filter.params.put("itemnumber", itemnumber);
 			where_and = " and ";
 		}
-
 		if (description.length() > 0) {
 			sql += where_and;
 
@@ -227,23 +265,17 @@ public class ItemService {
 			} else {
 				sql += " u.description like :description";
 			}
-			params.put("description", description);
+			filter.params.put("description", description);
 			where_and = " and ";
-		}
-
-		sql += " order by u.itemnumber, u.description";
-
-		TypedQuery<Item> query = em.createQuery(sql, Item.class);
-		for (Map.Entry<String, Object> entry : params.entrySet()) {
-			query.setParameter(entry.getKey(), entry.getValue());
-		}
-		List<Item> tmpList = query.getResultList();
-		List<SearchData> ret = new ArrayList<>();
-		tmpList.forEach(item -> {
-			ret.add(new SearchData(item.getItemnumber(), item.getDescription(), String.valueOf(item.getPrice())));
-		});
-		tmpList.clear();
-		return ret;
+		}		
+		filter.sql = sql;
+		return filter;
 	}
+	
+	
+	
+	
+	
+	
 
 }
