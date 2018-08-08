@@ -133,7 +133,7 @@ public class ItemService {
 	}
 	
 	
-	private SqlFilter createFilterpartForPagination(String sqlFirstPart, String itemnumber, String description) {
+	private SqlFilter paginationCreateFilterPart(String sqlFirstPart, String itemnumber, String description) {
 		
 		SqlFilter filter = new SqlFilter();		
 		String where_and = " where ";
@@ -174,7 +174,7 @@ public class ItemService {
 			sortorder = sortorder.replaceAll(",", ",u.");
 			sort = " order by " + sortorder;
 		}
-		SqlFilter sqlFilter = createFilterpartForPagination("select u  from Item u ", itemnumber, description);
+		SqlFilter sqlFilter = paginationCreateFilterPart("select u  from Item u ", itemnumber, description);
 		String sql = sqlFilter.sql;
 		sql += sort;
 		TypedQuery<Item> query = em.createQuery(sql, Item.class);
@@ -193,7 +193,7 @@ public class ItemService {
 	 */
 	public Long paginatecount(String itemnumber, String description) {
 
-		SqlFilter sqlFilter = createFilterpartForPagination("select count(u.id)  from Item u ", itemnumber, description);
+		SqlFilter sqlFilter = paginationCreateFilterPart("select count(u.id)  from Item u ", itemnumber, description);
 		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
 		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
@@ -205,7 +205,7 @@ public class ItemService {
 	
 	public List<SearchData> PROMPTpaginatesearch(Integer offset, Integer limit, String itemnumber, String description) {
 
-		SqlFilter sqlFilter = PROMPTcreateFilterpartForPagination("select u  from Item u ", itemnumber, description);
+		SqlFilter sqlFilter = PROMPTpaginationCreateFilterPart("select u  from Item u ", itemnumber, description);
 		String sql = sqlFilter.sql;
 		
 		sql += " order by u.itemnumber, u.description";
@@ -229,7 +229,7 @@ public class ItemService {
 	
 	public Long PROMPTpaginatecount(String itemnumber, String description) {
 
-		SqlFilter sqlFilter = PROMPTcreateFilterpartForPagination("select count(u.id)  from Item u ", itemnumber, description);
+		SqlFilter sqlFilter = PROMPTpaginationCreateFilterPart("select count(u.id)  from Item u ", itemnumber, description);
 		TypedQuery<Long> query = em.createQuery(sqlFilter.sql, Long.class);
 		for (Map.Entry<String, Object> entry : sqlFilter.params.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
@@ -240,7 +240,7 @@ public class ItemService {
 
 	
 	
-	private SqlFilter PROMPTcreateFilterpartForPagination(String sqlFirstPart, String itemnumber, String description) {
+	private SqlFilter PROMPTpaginationCreateFilterPart(String sqlFirstPart, String itemnumber, String description) {
 		
 		SqlFilter filter = new SqlFilter();		
 		String where_and = " where ";
