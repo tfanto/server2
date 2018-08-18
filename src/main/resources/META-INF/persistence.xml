@@ -16,6 +16,7 @@
 		<class>com.fnt.entity.LookupPK</class>
 		<class>com.fnt.entity.Lookup</class>
 		<class>com.fnt.entity.NumberSerie</class>
+		<class>com.fnt.entity.AppUser</class>
 
 		<properties>
 			<!-- property name="hibernate.dialect" value="${hibernate.dialect}"/ -->

@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
+import com.fnt.rest.AppUserResource;
 import com.fnt.rest.CustomerOrderResource;
 import com.fnt.rest.CustomerResource;
 import com.fnt.rest.ItemResource;
@@ -23,6 +24,7 @@ public class JAXRSConfiguration extends Application {
 		set.add(AppResponseFilter.class);
 		set.add(AppExceptionMapper.class);
 		set.add(QueueResource.class);
+		set.add(AppUserResource.class);
 
 		// the app
 		set.add(ItemResource.class);
