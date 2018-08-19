@@ -288,9 +288,9 @@ public class CustomerOrderService {
 		if (changedby.length() > 0) {
 			sql += where_and;
 			if (changedby.indexOf("%") < 0) {
-				sql += " changedby = :changedby";
+				sql += " customer_order_head.changedby = :changedby";
 			} else {
-				sql += " changedby like :changedby";
+				sql += " customer_order_head.changedby like :changedby";
 			}
 			filter.params.put("changedby", changedby);
 			where_and = " and ";
