@@ -1,5 +1,6 @@
 package com.fnt.sys;
 
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -49,6 +50,17 @@ public class AppExceptionMapper implements ExceptionMapper<RuntimeException> {
 		}
 	}
 
+	private String unwind(Throwable t) {
+
+		String ret = t.getMessage();
+		Throwable cause = t.getCause();
+		if (cause == null)
+			return ret;
+
+		ret += unwind( t.getCause());
+		return ret;
+	}
+
 	@Override
 	public Response toResponse(RuntimeException r) {
 
@@ -57,6 +69,15 @@ public class AppExceptionMapper implements ExceptionMapper<RuntimeException> {
 			MessageFormat fmt = new MessageFormat(e.getCode(), e.getMessage(), e.getCause());
 			String json = toJson(fmt);
 			return Response.status(e.getCode().intValue()).entity(json).build();
+		} else if (r instanceof EJBTransactionRolledbackException) {
+			String msg = unwind( r);
+			int n = msg.lastIndexOf("Detail:");
+			msg = msg.substring(n);
+			
+			MessageFormat fmt = new MessageFormat(400, msg, r.getCause());
+			String json = toJson(fmt);
+			return Response.status(400).entity(fmt).build();
+
 		} else {
 			MessageFormat fmt = new MessageFormat(400, r.getMessage(), r.getCause());
 			String json = toJson(fmt);
