@@ -28,7 +28,7 @@ public class AppUserResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER" })
+	@RolesAllowed({ "ADMIN", "USER", "GUEST" })
 	public Response update(AppUser user) {
 		String loggedInUser = sc.getUserPrincipal().getName();
 		AppUser updated = service.store(loggedInUser, user);
@@ -38,7 +38,7 @@ public class AppUserResource {
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "ADMIN", "USER" })
+	@RolesAllowed({ "ADMIN", "USER" , "GUEST"})
 	@Path(value = "{login}")
 	public Response get(@PathParam("login") String login) {
 		String loggedInUser = sc.getUserPrincipal().getName();
