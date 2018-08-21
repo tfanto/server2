@@ -15,6 +15,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -74,7 +75,7 @@ public class ItemResource {
 	public Response get(@PathParam("id") Long id) {
 		Item fetched = service.get(id);
 		if (fetched == null) {
-			return Response.status(Response.Status.NOT_FOUND).entity("Does not exist : " + id).build();
+			return Response.status(Response.Status.NOT_FOUND).entity(Entity.json("Does not exist : " + id)).build();
 		} else {
 			return Response.ok(fetched).build();
 		}
