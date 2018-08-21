@@ -15,6 +15,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -173,9 +174,13 @@ public class CustomerOrderResource {
 	@Path(value = "{ordernumber}")
 	public Response getById(@PathParam("ordernumber") String ordernumberStr) throws JsonProcessingException {
 		Long ordernumber = Long.parseLong(ordernumberStr);
-		CustomerOrderHead obj = service.getById(ordernumber);
-		String json = MAPPER.writeValueAsString(obj);
-		return Response.ok(json).build();
+		CustomerOrderHead fetched = service.getById(ordernumber);
+		if (fetched == null) {
+			return Response.status(Response.Status.NOT_FOUND).entity(Entity.json("Does not exist : " + String.valueOf(ordernumber))).build();
+		} else {
+			String json = MAPPER.writeValueAsString(fetched);
+			return Response.ok(json).build();
+		}
 	}
 
 	@DELETE
@@ -190,13 +195,13 @@ public class CustomerOrderResource {
 		service.delete(internalordernumber);
 		return Response.ok().build();
 	}
-	
+
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "ADMIN", "USER" })
 	@Path(value = "{internalordernumber}/{linenumber}/{itemnumber}")
-	public Response deleteCustomerOrderLine(@PathParam("internalordernumber") String internalordernumberStr,@PathParam("linenumber") String linenumberStr,@PathParam("itemnumber") String itemnumberStr) throws JsonProcessingException {
+	public Response deleteCustomerOrderLine(@PathParam("internalordernumber") String internalordernumberStr, @PathParam("linenumber") String linenumberStr, @PathParam("itemnumber") String itemnumberStr) throws JsonProcessingException {
 
 		Decoder decoder = Base64.getUrlDecoder();
 		String internalordernumber = new String(decoder.decode(internalordernumberStr));
@@ -206,6 +211,5 @@ public class CustomerOrderResource {
 		service.deleteCustomerOrderLine(internalordernumber, linenumber, itemnumber);
 		return Response.ok().build();
 	}
-
 
 }
