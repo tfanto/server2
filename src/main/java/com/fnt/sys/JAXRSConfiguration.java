@@ -20,6 +20,7 @@ public class JAXRSConfiguration extends Application {
 	public JAXRSConfiguration() {
 		// mandatory
 		set.add(AppServletContextListener.class);
+		set.add(AppObjectMapperContextResolver.class);
 		set.add(AppRequestFilter.class);
 		set.add(AppResponseFilter.class);
 		set.add(AppExceptionMapper.class);
