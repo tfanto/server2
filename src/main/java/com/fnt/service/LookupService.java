@@ -10,7 +10,7 @@ import javax.persistence.TypedQuery;
 
 import com.fnt.entity.Lookup;
 import com.fnt.entity.LookupPK;
-import com.fnt.sys.AppException;
+import com.fnt.AppException;
 
 @Stateless
 public class LookupService {

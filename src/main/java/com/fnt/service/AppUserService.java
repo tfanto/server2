@@ -5,7 +5,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.fnt.entity.AppUser;
-import com.fnt.sys.AppException;
+import com.fnt.AppException;
 
 @Stateless
 public class AppUserService {

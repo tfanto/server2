@@ -26,7 +26,7 @@ import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
 import com.fnt.entity.Item;
 import com.fnt.message.AppJMSMessageProducer;
-import com.fnt.sys.AppException;
+import com.fnt.AppException;
 import com.fnt.sys.SqlFilter;
 
 @Stateless
