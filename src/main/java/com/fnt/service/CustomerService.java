@@ -15,7 +15,7 @@ import javax.persistence.TypedQuery;
 
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
-import com.fnt.sys.AppException;
+import com.fnt.AppException;
 import com.fnt.sys.SqlFilter;
 
 @Stateless
