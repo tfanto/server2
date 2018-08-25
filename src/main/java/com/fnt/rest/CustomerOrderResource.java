@@ -22,8 +22,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fnt.dto.CustomerOrderHeadListView;
 import com.fnt.dto.CustomerOrderLineListView;
 import com.fnt.entity.CustomerOrderHead;
@@ -34,18 +32,11 @@ import com.fnt.service.CustomerOrderService;
 
 public class CustomerOrderResource {
 
-	ObjectMapper MAPPER = null;
-
 	@Inject
 	private CustomerOrderService service;
 
 	@Context
 	private SecurityContext sc;
-
-	public CustomerOrderResource() {
-		MAPPER = new ObjectMapper();
-		MAPPER.registerModule(new JavaTimeModule());
-	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -69,8 +60,7 @@ public class CustomerOrderResource {
 		String date = new String(decoder.decode(dateStr));
 		String userName = sc.getUserPrincipal().getName();
 		CustomerOrderHead obj = service.createHeader(customernumber, date, userName);
-		String json = MAPPER.writeValueAsString(obj);
-		return Response.ok(json).build();
+		return Response.ok(obj).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@POST
@@ -90,8 +80,7 @@ public class CustomerOrderResource {
 		Double priceperitem = Double.parseDouble(priceperitemDecoded);
 		String userName = sc.getUserPrincipal().getName();
 		CustomerOrderLine obj = service.createLine(internalordernumber, itemnumber, units, priceperitem, userName);
-		String json = MAPPER.writeValueAsString(obj);
-		return Response.ok(json).build();
+		return Response.ok(obj).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@GET
@@ -104,8 +93,7 @@ public class CustomerOrderResource {
 		Decoder decoder = Base64.getUrlDecoder();
 		String internalordernumber = new String(decoder.decode(internalordernumberStr));
 		List<CustomerOrderLineListView> obj = service.getLinesForOrder(internalordernumber);
-		String json = MAPPER.writeValueAsString(obj);
-		return Response.ok(json).build();
+		return Response.ok(obj).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@PUT
@@ -121,8 +109,7 @@ public class CustomerOrderResource {
 		Long ordernumber = Long.parseLong(ordernumberStr);
 		String userName = sc.getUserPrincipal().getName();
 		CustomerOrderHead obj = service.updateHeader(ordernumber, customernumber, date, userName);
-		String json = MAPPER.writeValueAsString(obj);
-		return Response.ok(json).build();
+		return Response.ok(obj).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@GET
@@ -145,8 +132,7 @@ public class CustomerOrderResource {
 		String changedby = new String(decoder.decode(changedbyStr));
 		String sortorder = new String(decoder.decode(sortorderStr));
 		List<CustomerOrderHeadListView> list = service.paginatesearch(offset, limit, customernumber, name, date, orderstatus, changedby, sortorder);
-		String json = MAPPER.writeValueAsString(list);
-		return Response.ok(json).build();
+		return Response.ok(list).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@GET
@@ -178,8 +164,7 @@ public class CustomerOrderResource {
 		if (fetched == null) {
 			return Response.status(Response.Status.NOT_FOUND).entity(Entity.json("Does not exist : " + String.valueOf(ordernumber))).build();
 		} else {
-			String json = MAPPER.writeValueAsString(fetched);
-			return Response.ok(json).build();
+			return Response.ok(fetched).type(MediaType.APPLICATION_JSON).build();
 		}
 	}
 

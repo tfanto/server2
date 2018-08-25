@@ -1,15 +1,12 @@
 package com.fnt.sys;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import javax.ws.rs.core.SecurityContext;
 
 import com.fnt.AppException;
@@ -45,6 +42,5 @@ public class AppCommonLib {
 			throw new AppException(412, violationMessages);
 		}
 	}
-	
 
 }
