@@ -45,6 +45,15 @@ public class AppRequestFilter implements ContainerRequestFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 
+		String path = uriInfo.getPath();
+		/*
+		 * URI uri = uriInfo.getRequestUri(); System.out.println(path);
+		 * System.out.println(requestContext.getMethod());
+		 */
+		if (path.startsWith("/events")) {
+			return;
+		}
+
 		String jweString = requestContext.getHeaderString("Authorization");
 		if (jweString == null) {
 			throw new AppException(403, "Forbidden");
