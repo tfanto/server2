@@ -19,25 +19,31 @@ import javax.servlet.annotation.WebListener;
 @WebListener
 public class AppServletContextListener implements ServletContextListener {
 
-	private static SecretKey encryptionKey;	
+	private static SecretKey encryptionKey;
+	private static String restEventEndpoint;
+
 	public static SecretKey getEncryptionKey() {
 		return encryptionKey;
+	}
+
+	public static String getRestEventEndpoint() {
+		return restEventEndpoint;
 	}
 
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
 
-
 		try {
-			
+
 			Properties props = new Properties();
-			InputStream is = servletContextEvent.getServletContext().getResourceAsStream("WEB-INF/settings.properties");		
+			InputStream is = servletContextEvent.getServletContext().getResourceAsStream("WEB-INF/settings.properties");
 			props.load(is);
 
 			String keystoreLocation = props.getProperty("keystorelocation");
 			String keystorefilepwd = props.getProperty("keystorefilepwd");
 			String encryptionkeypwd = props.getProperty("encryptionkeypwd");
 			String encryptionalias = props.getProperty("encryptionalias");
+			restEventEndpoint = props.getProperty("REST_EVENT_END_POINT");
 
 			// HMac-SHA256 key size = 256
 
@@ -68,8 +74,8 @@ public class AppServletContextListener implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
-		
-		if(encryptionKey != null) {
+
+		if (encryptionKey != null) {
 			encryptionKey = null;
 		}
 

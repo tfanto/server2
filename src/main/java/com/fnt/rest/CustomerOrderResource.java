@@ -3,6 +3,7 @@ package com.fnt.rest;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -15,7 +16,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -27,6 +31,7 @@ import com.fnt.dto.CustomerOrderLineListView;
 import com.fnt.entity.CustomerOrderHead;
 import com.fnt.entity.CustomerOrderLine;
 import com.fnt.service.CustomerOrderService;
+import com.fnt.sys.AppServletContextListener;
 
 @Path("customerorder")
 
@@ -60,6 +65,7 @@ public class CustomerOrderResource {
 		String date = new String(decoder.decode(dateStr));
 		String userName = sc.getUserPrincipal().getName();
 		CustomerOrderHead obj = service.createHeader(customernumber, date, userName);
+		post("CustomerOrder " + obj.getInternalordernumber() + " received");
 		return Response.ok(obj).type(MediaType.APPLICATION_JSON).build();
 	}
 
@@ -196,5 +202,28 @@ public class CustomerOrderResource {
 		service.deleteCustomerOrderLine(internalordernumber, linenumber, itemnumber);
 		return Response.ok().build();
 	}
+	
+	
+	// POST to EventsResource
+	
+	private void post(String msg) {
+		
+		String eventEndpoint = AppServletContextListener.getRestEventEndpoint();
+		
+        Client client = ClientBuilder.newBuilder()
+                .connectTimeout(5, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        WebTarget webTarget = client.target(eventEndpoint);
+        webTarget.request().post(Entity.entity(msg, MediaType.TEXT_PLAIN_TYPE));
+        
+        client.close();
+		
+		
+	}
+	
+	
+	
+	
 
 }

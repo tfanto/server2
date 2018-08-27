@@ -9,6 +9,7 @@ import javax.ws.rs.core.Application;
 import com.fnt.rest.AppUserResource;
 import com.fnt.rest.CustomerOrderResource;
 import com.fnt.rest.CustomerResource;
+import com.fnt.rest.EventsResource;
 import com.fnt.rest.ItemResource;
 import com.fnt.rest.QueueResource;
 
@@ -26,6 +27,7 @@ public class JAXRSConfiguration extends Application {
 		set.add(AppExceptionMapper.class);
 		set.add(QueueResource.class);
 		set.add(AppUserResource.class);
+		set.add(EventsResource.class);
 
 		// the app
 		set.add(ItemResource.class);
