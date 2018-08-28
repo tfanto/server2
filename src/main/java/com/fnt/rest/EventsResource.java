@@ -1,102 +1,80 @@
 package com.fnt.rest;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
+import com.fnt.rest.DomainEvent;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.json.bind.annotation.JsonbPropertyOrder;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.annotation.PostConstruct;
+import javax.ejb.Lock;
+import javax.ejb.Singleton;
+import javax.enterprise.event.Observes;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.Sse;
+import javax.ws.rs.sse.SseBroadcaster;
 import javax.ws.rs.sse.SseEventSink;
+import java.util.ArrayList;
+import java.util.List;
 
-@ApplicationScoped
+import static javax.ejb.LockType.READ;
+import static javax.ejb.LockType.WRITE;
+
 @Path("events")
+@Singleton
 public class EventsResource {
 
-	private volatile SseEventSink eventSink;
+    @Context
+    Sse sse;
 
-	@GET
-	@Produces(MediaType.SERVER_SENT_EVENTS)
-	public void openEventStream(@Context final SseEventSink eventSink) {
-		if (this.eventSink == null) {
-			this.eventSink = eventSink;
-		}
-	}
+    private SseBroadcaster sseBroadcaster;
+    private int lastEventId;
+    private List<String> messages = new ArrayList<>();
 
-	@POST
-	public void sendEvent(String message, @Context Sse sse) {
-		final SseEventSink localSink = eventSink;
-		if (localSink == null)
-			return;
+    @PostConstruct
+    public void initSse() {
+        sseBroadcaster = sse.newBroadcaster();
 
-		// send simple event
-		OutboundSseEvent event = sse.newEvent(message);
-		localSink.send(event);
+        sseBroadcaster.onError((o, e) -> {
+            // ...
+        });
+    }
 
-		// send simple string event
-		// OutboundSseEvent stringEvent = sse.newEvent("stringEvent", message + " From
-		// server.");
-		// localSink.send(stringEvent);
+    @GET
+    @Lock(READ)
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    public void itemEvents(@HeaderParam(HttpHeaders.LAST_EVENT_ID_HEADER)
+                           @DefaultValue("-1") int lastEventId,
+                           @Context SseEventSink eventSink) {
 
-		// send primitive long event using builder
-		// OutboundSseEvent primitiveEvent =
-		// sse.newEventBuilder().name("primitiveEvent").data(System.currentTimeMillis()).build();
-		// localSink.send(primitiveEvent);
+        if (lastEventId >= 0)
+            replayLastMessages(lastEventId, eventSink);
 
-		// send JSON-B marshalling to send event
-		// @formatter:off
-		 /*
-		OutboundSseEvent jsonbEvent = sse
-				.newEventBuilder()
-				.name("jsonbEvent")
-				.data(new JsonbSseEvent(message))
-				.mediaType(MediaType.APPLICATION_JSON_TYPE)
-				.build();
-		localSink.send(jsonbEvent);
-		*/
-		// @formatter:on
-	}
+        sseBroadcaster.register(eventSink);
+    }
 
-	@DELETE
-	public void closeEventStream() throws IOException {
-		final SseEventSink localSink = eventSink;
-		if (localSink != null) {
-			this.eventSink.close();
-		}
-		this.eventSink = null;
-	}
+    private void replayLastMessages(int lastEventId, SseEventSink eventSink) {
+        try {
+            for (int i = lastEventId; i < messages.size(); i++) {
+                eventSink.send(createEvent(messages.get(i), i + 1));
+            }
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Could not replay messages ", e);
+        }
+    }
 
-	@JsonbPropertyOrder({ "time", "message" })
-	public static class JsonbSseEvent {
-		String message;
+    private OutboundSseEvent createEvent(String message, int id) {
+        return sse.newEventBuilder().id(String.valueOf(id)).data(message).build();
+    }
 
-		LocalDateTime today = LocalDateTime.now();
+    @Lock(WRITE)
+    public void onEvent(@Observes DomainEvent domainEvent) {
+        String message = domainEvent.getContents();
+        messages.add(message);
 
-		public JsonbSseEvent(String message) {
-			this.message = message;
-		}
+        OutboundSseEvent event = createEvent(message, ++lastEventId);
 
-		public String getMessage() {
-			return message;
-		}
+        sseBroadcaster.broadcast(event);
+    }
 
-		public void setMessage(String message) {
-			this.message = message;
-		}
-
-		public LocalDateTime getToday() {
-			return today;
-		}
-
-		public void setToday(LocalDateTime today) {
-			this.today = today;
-		}
-	}
 }
