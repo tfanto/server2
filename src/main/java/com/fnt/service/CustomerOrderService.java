@@ -1,6 +1,7 @@
 package com.fnt.service;
 
 import java.math.BigInteger;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -17,6 +19,7 @@ import javax.persistence.TypedQuery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fnt.AppException;
 import com.fnt.dto.CustomerOrder;
 import com.fnt.dto.CustomerOrderHeadListView;
 import com.fnt.dto.CustomerOrderLineListView;
@@ -26,7 +29,7 @@ import com.fnt.entity.CustomerOrderLine;
 import com.fnt.entity.CustomerOrderLinePK;
 import com.fnt.entity.Item;
 import com.fnt.message.AppJMSMessageProducer;
-import com.fnt.AppException;
+import com.fnt.rest.DomainEvent;
 import com.fnt.sys.SqlFilter;
 
 @Stateless
@@ -43,6 +46,9 @@ public class CustomerOrderService {
 
 	@Inject
 	private AppJMSMessageProducer queueProducer;
+
+	@Inject
+	Event<DomainEvent> domainEvents;
 
 	private ObjectMapper MAPPER = null;
 
@@ -72,7 +78,7 @@ public class CustomerOrderService {
 		String internalordernumber = UUID.randomUUID().toString();
 
 		head.setInternalordernumber(internalordernumber);
-		createHeader(head);
+		CustomerOrderHead created = createHeader(head);
 
 		List<CustomerOrderLine> lines = customerOrder.getLines();
 		if (lines != null) {
@@ -127,6 +133,7 @@ public class CustomerOrderService {
 	// used from batch
 	public CustomerOrderHead createHeader(CustomerOrderHead customerOrderHead) {
 		em.persist(customerOrderHead);
+		domainEvents.fire(new DomainEvent("CRT:OH:" + String.valueOf(customerOrderHead.getInternalordernumber() + ":" + Instant.now())));
 		return customerOrderHead;
 	}
 
@@ -164,6 +171,7 @@ public class CustomerOrderService {
 		customerOrderHead.setInternalordernumber(internalordernumber);
 		customerOrderHead.setStatus(1);
 		em.persist(customerOrderHead);
+		domainEvents.fire(new DomainEvent("CRT:OH:" + String.valueOf(internalordernumber + ":" + Instant.now())));
 		return customerOrderHead;
 	}
 
@@ -382,6 +390,7 @@ public class CustomerOrderService {
 		header.setChangedby(changedby);
 		header.setDate(dateTime);
 		header.setCustomerid(customer.getId());
+		domainEvents.fire(new DomainEvent("CHG:OH:" + String.valueOf(header.getInternalordernumber() + ":" + Instant.now())));
 		return em.merge(header);
 
 	}

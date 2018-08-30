@@ -1,11 +1,14 @@
 package com.fnt.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -13,15 +16,19 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import com.fnt.AppException;
 import com.fnt.dto.SearchData;
 import com.fnt.entity.Customer;
-import com.fnt.AppException;
+import com.fnt.rest.DomainEvent;
 import com.fnt.sys.SqlFilter;
 
 @Stateless
 public class CustomerService {
 
 	private static final Integer HTTP_PRECONDITION_FAILED = 412;
+
+	@Inject
+	Event<DomainEvent> domainEvents;
 
 	@PersistenceContext
 	private EntityManager em;
@@ -31,6 +38,7 @@ public class CustomerService {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity is null. Nothing to persist");
 		}
 		em.persist(customer);
+		domainEvents.fire(new DomainEvent("CRT:CUNO:" + String.valueOf(customer.getCustomernumber() + ":" + Instant.now())));
 		return customer;
 	}
 
@@ -43,6 +51,7 @@ public class CustomerService {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
 
+		domainEvents.fire(new DomainEvent("CHG:CUNO:" + String.valueOf(customer.getCustomernumber() + ":" + Instant.now())));
 		return em.merge(customer);
 	}
 

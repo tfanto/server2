@@ -1,13 +1,11 @@
 package com.fnt.rest;
 
-import java.time.Instant;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.security.RolesAllowed;
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -45,8 +43,6 @@ public class CustomerOrderResource {
 	@Context
 	private SecurityContext sc;
 	
-    @Inject
-    Event<DomainEvent> domainEvents;
 
 
 	@POST
@@ -72,9 +68,6 @@ public class CustomerOrderResource {
 		String userName = sc.getUserPrincipal().getName();
 		CustomerOrderHead obj = service.createHeader(customernumber, date, userName);
 		
-		String msg = "CustomerOrder " + obj.getInternalordernumber() + " ";
-		domainEvents.fire(new DomainEvent(msg + Instant.now()));
-		//post("CustomerOrder " + obj.getInternalordernumber() + " received");
 		return Response.ok(obj).type(MediaType.APPLICATION_JSON).build();
 	}
 

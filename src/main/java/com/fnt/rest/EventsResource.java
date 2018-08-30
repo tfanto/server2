@@ -73,6 +73,7 @@ public class EventsResource {
         messages.add(message);
 
         OutboundSseEvent event = createEvent(message, ++lastEventId);
+        
 
         sseBroadcaster.broadcast(event);
     }
