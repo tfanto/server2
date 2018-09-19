@@ -83,8 +83,9 @@ public class ItemService {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Orderingpoint cannot be 0");
 		}
 
+		Item merged = em.merge(item);
 		domainEvents.fire(new DomainEvent("CHG:ITEM:" + String.valueOf(item.getItemnumber() + ":" + Instant.now())));
-		return em.merge(item);
+		return merged;
 	}
 
 	public void delete(Long id) {

@@ -204,28 +204,5 @@ public class CustomerOrderResource {
 		service.deleteCustomerOrderLine(internalordernumber, linenumber, itemnumber);
 		return Response.ok().build();
 	}
-	
-	
-	// POST to EventsResource
-	
-	private void post(String msg) {
 		
-		String eventEndpoint = AppServletContextListener.getRestEventEndpoint();
-		
-        Client client = ClientBuilder.newBuilder()
-                .connectTimeout(5, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
-                .build();
-
-        WebTarget webTarget = client.target(eventEndpoint);
-        webTarget.request().post(Entity.entity(msg, MediaType.TEXT_PLAIN_TYPE));
-        
-        client.close();
-		
-		
-	}
-	
-	
-	
-	
-
 }

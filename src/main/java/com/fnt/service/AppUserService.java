@@ -2,15 +2,17 @@ package com.fnt.service;
 
 import java.time.Instant;
 
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.fnt.AppException;
 import com.fnt.entity.AppUser;
 import com.fnt.rest.DomainEvent;
-import com.fnt.AppException;
 
 @Stateless
 public class AppUserService {
@@ -19,9 +21,12 @@ public class AppUserService {
 
 	@PersistenceContext
 	private EntityManager em;
-	
+
 	@Inject
 	Event<DomainEvent> domainEvents;
+
+	@Resource
+	EJBContext securityContext;
 
 	public AppUser store(String loggedinUser, AppUser user) {
 
@@ -38,7 +43,7 @@ public class AppUserService {
 		AppUser ret = em.find(AppUser.class, user.getLogin());
 		if (ret == null) {
 			em.persist(user);
-			domainEvents.fire(new DomainEvent("CRT:USR:" + String.valueOf(user.getFirstname()+"/"+user.getLastname() + ":" + Instant.now())));
+			domainEvents.fire(new DomainEvent("CRT:USR:" + String.valueOf(user.getFirstname() + "/" + user.getLastname() + ":" + Instant.now())));
 			return user;
 		} else {
 			ret.setFirstname(user.getFirstname());
@@ -48,8 +53,9 @@ public class AppUserService {
 			ret.setPadr(user.getPadr());
 			ret.setPhone(user.getPhone());
 			ret.setCountry(user.getCountry());
-			domainEvents.fire(new DomainEvent("CHG:USR:" + String.valueOf(user.getFirstname()+"/"+user.getLastname() + ":" + Instant.now())));
-			return em.merge(ret);
+			AppUser merged = em.merge(ret);
+			domainEvents.fire(new DomainEvent("CHG:USR:" + String.valueOf(user.getFirstname() + "/" + user.getLastname() + ":" + Instant.now())));
+			return merged;
 		}
 	}
 
@@ -62,9 +68,12 @@ public class AppUserService {
 		}
 
 		AppUser ret = em.find(AppUser.class, login);
-		if(ret == null) {
+		if (ret == null) {
 			ret = new AppUser();
 		}
+		
+		//String usr = securityContext.getCallerPrincipal().getName();
+		
 		return ret;
 	}
 

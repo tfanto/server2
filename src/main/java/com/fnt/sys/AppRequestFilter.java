@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import javax.annotation.Priority;
 import javax.crypto.SecretKey;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -42,6 +43,7 @@ public class AppRequestFilter implements ContainerRequestFilter {
 	@Context
 	UriInfo uriInfo;
 
+
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 
@@ -50,32 +52,32 @@ public class AppRequestFilter implements ContainerRequestFilter {
 		 * URI uri = uriInfo.getRequestUri(); System.out.println(path);
 		 * System.out.println(requestContext.getMethod());
 		 */
-		if (path.startsWith("/events")) {
+		if (path.startsWith("/ws")) {
 			return;
 		}
 
 		String jweString = requestContext.getHeaderString("Authorization");
 		if (jweString == null) {
-			throw new AppException(403, "Forbidden");
+			throw new AppException(403, "Forbidden1");
 			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
 		}
 		Map<String, Object> payload = null;
 		try {
 			payload = decrypt(jweString);
 		} catch (Throwable t) {
-			throw new AppException(403, "Forbidden");
+			throw new AppException(403, "Forbidden2");
 			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
 		}
 		if (payload == null) {
-			throw new AppException(403, "Forbidden");
+			throw new AppException(403, "Forbidden3");
 			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
 		}
 		if (!payload.containsKey("user")) {
-			throw new AppException(403, "Forbidden");
+			throw new AppException(403, "Forbidden4");
 			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
 		}
 		if (!payload.containsKey("roles")) {
-			throw new AppException(403, "Forbidden");
+			throw new AppException(403, "Forbidden5");
 			// requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
 		}
 

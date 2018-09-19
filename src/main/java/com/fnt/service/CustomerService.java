@@ -51,8 +51,9 @@ public class CustomerService {
 			throw new AppException(HTTP_PRECONDITION_FAILED, "Entity primary key must NOT be null at update");
 		}
 
+		Customer merged = em.merge(customer);
 		domainEvents.fire(new DomainEvent("CHG:CUNO:" + String.valueOf(customer.getCustomernumber() + ":" + Instant.now())));
-		return em.merge(customer);
+		return em.merge(merged);
 	}
 
 	public void delete(Long id) {
